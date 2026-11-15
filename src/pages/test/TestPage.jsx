@@ -4,6 +4,7 @@ import ToggleIconButton from "../../components/button/ToggleIconButton";
 import homeGray from "../../assets/images/icon/home-gray.svg";
 import homePink from "../../assets/images/icon/home-pink.svg";
 import CommonInput from "../../components/input/CommonInput";
+import SearchBar from "../../components/input/SearchBar";
 
 function TestPage() {
   return (
@@ -38,6 +39,10 @@ function TestPage() {
           $height={40}
           $iconSize={28}
         />
+      </div>
+
+      <div style={{ padding: "8px 0" }}>
+        <SearchBar placeholder="궁금한 팝업을 검색해 보세요" />
       </div>
     </div>
   );
