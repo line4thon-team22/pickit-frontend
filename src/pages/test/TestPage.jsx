@@ -9,14 +9,19 @@ import SearchBar from "../../components/input/SearchBar";
 import StatusBadge from "../../components/badge/StatusBadge";
 import CategoryButton from "../../components/button/CategoryButton";
 import TopBar from "../../components/bar/TopBar";
+import ModalBase from "../../components/modal/ModalBase";
 
 function TestPage() {
+  // 탭바 useState
   const [activeTab, setActiveTab] = useState("my");
 
   const tabs = [
     { label: "내 현장 팝업", value: "my" },
     { label: "전체 교환", value: "all" },
   ];
+
+  // 모달 useState
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div>
@@ -50,7 +55,6 @@ function TestPage() {
           $height={40}
           $iconSize={28}
         />
-        s
       </div>
 
       <div style={{ padding: "8px 0" }}>
@@ -83,6 +87,32 @@ function TestPage() {
             <p>전체 교환 목록</p>
           )}
         </div>
+      </div>
+
+      <div style={{ padding: "40px" }}>
+        <CommonButton
+          $width={160}
+          $height={44}
+          $fontSize={14}
+          onClick={() => setIsModalOpen(true)}
+        >
+          모달 열기
+        </CommonButton>
+
+        <ModalBase
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          $width={330}
+        >
+          <CommonButton
+            $width={278}
+            $height={46}
+            $fontSize={16}
+            onClick={() => setIsModalOpen(false)}
+          >
+            교환 확정
+          </CommonButton>
+        </ModalBase>
       </div>
     </div>
   );
