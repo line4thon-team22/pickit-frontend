@@ -10,6 +10,7 @@ import StatusBadge from "../../components/badge/StatusBadge";
 import CategoryButton from "../../components/button/CategoryButton";
 import TopBar from "../../components/bar/TopBar";
 import ModalBase from "../../components/modal/ModalBase";
+import LocationButton from "../../components/button/LocationButton";
 
 function TestPage() {
   // 탭바 useState
@@ -113,6 +114,11 @@ function TestPage() {
             교환 확정
           </CommonButton>
         </ModalBase>
+      </div>
+      <div>
+        <LocationButton onClick={() => alert("위치 버튼 클릭!")}>
+          위치 인증
+        </LocationButton>
       </div>
     </div>
   );
