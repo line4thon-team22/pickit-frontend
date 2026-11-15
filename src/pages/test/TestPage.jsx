@@ -12,6 +12,19 @@ import TopBar from "../../components/bar/TopBar";
 import ModalBase from "../../components/modal/ModalBase";
 import LocationButton from "../../components/button/LocationButton";
 
+import Header from "../../components/header/Header";
+import BottomNav from "../../components/nav/BottomNav";
+import Footer from "../../components/footer/Footer";
+
+// 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
+const assetImages = import.meta.glob(
+  "../../assets/images/**/*.{svg,png,jpg,jpeg}",
+  {
+    eager: true,
+    import: "default",
+  },
+);
+
 function TestPage() {
   // 탭바 useState
   const [activeTab, setActiveTab] = useState("my");
@@ -119,6 +132,69 @@ function TestPage() {
         <LocationButton onClick={() => alert("위치 버튼 클릭!")}>
           위치 인증
         </LocationButton>
+      </div>
+
+      {/* 에셋 확인 */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>에셋</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+          {Object.entries(assetImages).map(([path, src]) => (
+            <div
+              key={path}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "10px",
+              }}
+            >
+              <img
+                src={src}
+                alt=""
+                style={{ maxWidth: "64px", outline: "1px dashed #d0d0d0" }}
+              />
+              <span>{path.split("assets/images/")[1]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 헤더 확인 */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>헤더</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* 각 헤더를 div로 감싸서 sticky가 서로 겹치지 않게 함 */}
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header variant="main" showLocationButton />
+          </div>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header variant="main" />
+          </div>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header variant="chat" user={{ nickname: "우사기", rating: 4.8 }} />
+          </div>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header variant="chat" user={{ nickname: "피킷", rating: null }} />
+          </div>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header variant="back" onBack={() => alert("뒤로가기 클릭!")} />
+          </div>
+        </div>
+      </div>
+
+      {/* 하단 내비·푸터 확인 */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>하단 내비·푸터</p>
+        <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
+          현재 경로가 /test라서 모든 탭이 비활성으로 보이는 게 정상
+        </p>
+        <div style={{ padding: "0 24px" }}>
+          <BottomNav />
+        </div>
+        <div style={{ marginTop: "12px", outline: "1px dashed #d0d0d0" }}>
+          <Footer />
+        </div>
       </div>
     </div>
   );
