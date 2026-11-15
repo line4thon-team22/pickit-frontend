@@ -1,11 +1,15 @@
 import styled from "styled-components";
+import Header from "../../components/header/Header";
 
 // TODO: 레이아웃 확인용 빈 페이지 (커밋 전 삭제)
 export default function ExchangePage() {
   return (
-    <Wrapper>
-      <Title>교환</Title>
-    </Wrapper>
+    <>
+      <Header variant="main" showLocationButton />
+      <Wrapper>
+        <Title>교환</Title>
+      </Wrapper>
+    </>
   );
 }
 

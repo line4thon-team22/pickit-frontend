@@ -1,11 +1,15 @@
 import styled from "styled-components";
+import Header from "../../components/header/Header";
 
 // TODO: 레이아웃 확인용 빈 페이지 (커밋 전 삭제)
 export default function PopupDetailPage() {
   return (
-    <Wrapper>
-      <Title>팝업 상세</Title>
-    </Wrapper>
+    <>
+      <Header variant="back" />
+      <Wrapper>
+        <Title>팝업 상세</Title>
+      </Wrapper>
+    </>
   );
 }
 
@@ -14,6 +18,8 @@ const Wrapper = styled.div`
   flex-direction: column;
   gap: 12px;
 
+  /* 스크롤 확인용 높이 */
+  min-height: 1200px;
   padding: 20px;
 `;
 

@@ -1,13 +1,17 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import Header from "../../components/header/Header";
 
 // TODO: 레이아웃 확인용 빈 페이지 (커밋 전 삭제)
 export default function ChatPage() {
   return (
-    <Wrapper>
-      <Title>채팅</Title>
-      <Link to="/chat/1">채팅방으로 이동</Link>
-    </Wrapper>
+    <>
+      <Header variant="main" />
+      <Wrapper>
+        <Title>채팅</Title>
+        <Link to="/chat/1">채팅방으로 이동</Link>
+      </Wrapper>
+    </>
   );
 }
 

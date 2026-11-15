@@ -24,7 +24,6 @@ const Button = styled.button`
   position: relative;
   overflow: hidden;
 
-  box-shadow: 0 -4px 8px rgba(255, 229, 240, 0.6) inset;
   border: 1px solid #ff66a6;
   border-radius: 10000px;
   background-color: #ff006a;
@@ -32,7 +31,7 @@ const Button = styled.button`
 
   font-family: inherit;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
 
   &::after {

@@ -1,11 +1,15 @@
 import styled from "styled-components";
+import Header from "../../components/header/Header";
 
 // TODO: 홈 화면 구현 전 빈 페이지
 export default function HomePage() {
   return (
-    <Wrapper>
-      <Title>홈</Title>
-    </Wrapper>
+    <>
+      <Header variant="main" showLocationButton />
+      <Wrapper>
+        <Title>홈</Title>
+      </Wrapper>
+    </>
   );
 }
 
