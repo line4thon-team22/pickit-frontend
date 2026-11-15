@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
 
-// TODO: 레이아웃 확인용 빈 페이지 (커밋 전 삭제)
+// TODO: 레이아웃 확인용 빈 페이지 (담당자가 실제 화면으로 구현)
 export default function ChatPage() {
   return (
     <>

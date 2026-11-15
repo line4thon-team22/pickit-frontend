@@ -3,7 +3,7 @@ import AppLayout from "./layouts/AppLayout";
 import HomePage from "./pages/home/HomePage";
 import TestPage from "./pages/test/TestPage";
 
-// TODO: 확인용 빈 페이지 (커밋 전 삭제)
+// TODO: 레이아웃 확인용 빈 페이지 (담당자가 실제 화면으로 구현)
 import PopupPage from "./pages/popup/PopupPage";
 import PopupDetailPage from "./pages/popup/PopupDetailPage";
 import ExchangePage from "./pages/exchange/ExchangePage";
@@ -33,7 +33,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
 
-      // TODO: 확인용 빈 페이지 라우트 (커밋 전 삭제)
+      // 탭·상세 페이지 (현재는 레이아웃 확인용 빈 페이지)
       { path: "popup", element: <PopupPage /> },
       {
         path: "popup/:popupId",
