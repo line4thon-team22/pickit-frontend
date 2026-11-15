@@ -1,3 +1,4 @@
+import { useState } from "react";
 import CommonButton from "../../components/button/CommonButton";
 import ToggleIconButton from "../../components/button/ToggleIconButton";
 
@@ -7,8 +8,16 @@ import CommonInput from "../../components/input/CommonInput";
 import SearchBar from "../../components/input/SearchBar";
 import StatusBadge from "../../components/badge/StatusBadge";
 import CategoryButton from "../../components/button/CategoryButton";
+import TopBar from "../../components/bar/TopBar";
 
 function TestPage() {
+  const [activeTab, setActiveTab] = useState("my");
+
+  const tabs = [
+    { label: "내 현장 팝업", value: "my" },
+    { label: "전체 교환", value: "all" },
+  ];
+
   return (
     <div>
       <div
@@ -62,6 +71,18 @@ function TestPage() {
         <CategoryButton>강남/서초</CategoryButton>
         <CategoryButton defaultSelected={true}>경상권</CategoryButton>
         <CategoryButton>종로/광화문</CategoryButton>
+      </div>
+
+      <div>
+        <TopBar tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+
+        <div>
+          {activeTab === "my" ? (
+            <p>내 현장 팝업 목록</p>
+          ) : (
+            <p>전체 교환 목록</p>
+          )}
+        </div>
       </div>
     </div>
   );
