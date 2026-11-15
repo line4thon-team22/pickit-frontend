@@ -5,6 +5,7 @@ import homeGray from "../../assets/images/icon/home-gray.svg";
 import homePink from "../../assets/images/icon/home-pink.svg";
 import CommonInput from "../../components/input/CommonInput";
 import SearchBar from "../../components/input/SearchBar";
+import StatusBadge from "../../components/badge/StatusBadge";
 
 function TestPage() {
   return (
@@ -43,6 +44,15 @@ function TestPage() {
 
       <div style={{ padding: "8px 0" }}>
         <SearchBar placeholder="궁금한 팝업을 검색해 보세요" />
+      </div>
+
+      <div style={{ display: "flex", gap: "12px", padding: "40px" }}>
+        <StatusBadge type="popup" status="upcoming" />
+        <StatusBadge type="popup" status="ongoing" />
+        <StatusBadge type="popup" status="completed" />
+
+        <StatusBadge type="reservation" status="ongoing" />
+        <StatusBadge type="reservation" status="completed" />
       </div>
     </div>
   );
