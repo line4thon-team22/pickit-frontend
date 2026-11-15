@@ -12,6 +12,12 @@ import TopBar from "../../components/bar/TopBar";
 import ModalBase from "../../components/modal/ModalBase";
 import LocationButton from "../../components/button/LocationButton";
 
+// 에셋 확인용: assets/images 아래 SVG를 자동으로 모은다
+const assetImages = import.meta.glob("../../assets/images/**/*.svg", {
+  eager: true,
+  import: "default",
+});
+
 function TestPage() {
   // 탭바 useState
   const [activeTab, setActiveTab] = useState("my");
@@ -119,6 +125,28 @@ function TestPage() {
         <LocationButton onClick={() => alert("위치 버튼 클릭!")}>
           위치 인증
         </LocationButton>
+      </div>
+
+      {/* 에셋 확인 */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>에셋</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+          {Object.entries(assetImages).map(([path, src]) => (
+            <div
+              key={path}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "10px",
+              }}
+            >
+              <img src={src} alt="" style={{ outline: "1px dashed #d0d0d0" }} />
+              <span>{path.split("assets/images/")[1]}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
