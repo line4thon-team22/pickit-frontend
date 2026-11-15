@@ -1,5 +1,7 @@
 import { Outlet, useMatches } from "react-router-dom";
 import styled from "styled-components";
+import Footer from "../components/footer/Footer";
+import BottomNav from "../components/nav/BottomNav";
 
 // 모든 페이지를 감싸는 앱 셸
 // 라우트 handle의 hideNav / hideFooter로 하단 내비·푸터를 숨긴다 (router.jsx 참고)
@@ -15,11 +17,13 @@ export default function AppLayout() {
           <Main>
             <Outlet />
           </Main>
-          {/* TODO: 5단계에서 Footer 컴포넌트로 교체 */}
-          {!hideFooter && <FooterSlot>푸터 자리</FooterSlot>}
+          {!hideFooter && <Footer />}
         </ScrollArea>
-        {/* TODO: 5단계에서 하단 내비 컴포넌트로 교체 */}
-        {!hideNav && <NavSlot>하단 내비 자리</NavSlot>}
+        {!hideNav && (
+          <NavPosition>
+            <BottomNav />
+          </NavPosition>
+        )}
       </Frame>
     </Background>
   );
@@ -57,10 +61,11 @@ const ScrollArea = styled.div`
   overflow-y: auto;
   overscroll-behavior: contain;
 
-  /* 내비가 있으면 본문 끝이 내비에 가리지 않도록 여백 확보 */
+  /* 내비가 있으면 본문 끝이 내비에 가리지 않도록 내비 높이 + 아래 간격만큼 여백 확보
+     (푸터 아래 여백 36px과 합쳐 피그마 홈 157:2203의 푸터~내비 간격과 맞춤) */
   padding-bottom: ${({ $hasNav, theme }) =>
     $hasNav
-      ? `calc(${theme.layout.navHeight} + max(${theme.layout.navBottom}, env(safe-area-inset-bottom)) + 16px)`
+      ? `calc(${theme.layout.navHeight} + max(${theme.layout.navBottom}, env(safe-area-inset-bottom)))`
       : "env(safe-area-inset-bottom)"};
 `;
 
@@ -68,21 +73,8 @@ const Main = styled.main`
   flex: 1 0 auto;
 `;
 
-const FooterSlot = styled.div`
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 120px;
-
-  border: 1px dashed #d0d0d0;
-  color: #a1a1a1;
-  font-size: 12px;
-`;
-
-const NavSlot = styled.nav`
+// 하단 내비를 화면 아래에 띄우는 위치 (354px = 402px - 좌우 24px)
+const NavPosition = styled.div`
   position: absolute;
   left: 24px;
   right: 24px;
@@ -91,16 +83,4 @@ const NavSlot = styled.nav`
     env(safe-area-inset-bottom)
   );
   z-index: 10;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: ${({ theme }) => theme.layout.navHeight};
-
-  border: 1px dashed #ff006a;
-  border-radius: 10000px;
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #ff006a;
-  font-size: 12px;
 `;

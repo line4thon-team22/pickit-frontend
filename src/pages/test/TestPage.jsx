@@ -13,6 +13,8 @@ import ModalBase from "../../components/modal/ModalBase";
 import LocationButton from "../../components/button/LocationButton";
 
 import Header from "../../components/header/Header";
+import BottomNav from "../../components/nav/BottomNav";
+import Footer from "../../components/footer/Footer";
 
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
@@ -178,6 +180,20 @@ function TestPage() {
           <div style={{ outline: "1px dashed #d0d0d0" }}>
             <Header variant="back" onBack={() => alert("뒤로가기 클릭!")} />
           </div>
+        </div>
+      </div>
+
+      {/* 하단 내비·푸터 확인 */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>하단 내비·푸터</p>
+        <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
+          현재 경로가 /test라서 모든 탭이 비활성으로 보이는 게 정상
+        </p>
+        <div style={{ padding: "0 24px" }}>
+          <BottomNav />
+        </div>
+        <div style={{ marginTop: "12px", outline: "1px dashed #d0d0d0" }}>
+          <Footer />
         </div>
       </div>
     </div>
