@@ -1,7 +1,9 @@
+import TestPage from "./pages/test/TestPage";
+
 function App() {
   return (
     <div>
-      <h1>app jsx</h1>
+      <TestPage />
     </div>
   );
 }
