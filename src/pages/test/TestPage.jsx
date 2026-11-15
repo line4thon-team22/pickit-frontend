@@ -6,6 +6,7 @@ import homePink from "../../assets/images/icon/home-pink.svg";
 import CommonInput from "../../components/input/CommonInput";
 import SearchBar from "../../components/input/SearchBar";
 import StatusBadge from "../../components/badge/StatusBadge";
+import CategoryButton from "../../components/button/CategoryButton";
 
 function TestPage() {
   return (
@@ -40,6 +41,7 @@ function TestPage() {
           $height={40}
           $iconSize={28}
         />
+        s
       </div>
 
       <div style={{ padding: "8px 0" }}>
@@ -53,6 +55,13 @@ function TestPage() {
 
         <StatusBadge type="reservation" status="ongoing" />
         <StatusBadge type="reservation" status="completed" />
+      </div>
+
+      <div style={{ display: "flex", gap: "6px" }}>
+        <CategoryButton>서울 전체</CategoryButton>
+        <CategoryButton>강남/서초</CategoryButton>
+        <CategoryButton defaultSelected={true}>경상권</CategoryButton>
+        <CategoryButton>종로/광화문</CategoryButton>
       </div>
     </div>
   );
