@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
 import RecommendBanner from "../../components/area/RecommendBanner";
+import AppointmentCard from "../../components/card/AppointmentCard";
 import ExchangeCard from "../../components/card/ExchangeCard";
 
 import product1 from "../../assets/images/product/recommend1.png";
@@ -53,6 +54,13 @@ const products = [
   },
 ];
 
+const appointment = {
+  title: "케이, 토마 캔뱃지",
+  want: "아무 캔뱃지",
+  location: "용산 아이파크몰 6층 팝업 카페",
+  date: "채팅으로 협의해요 :)",
+};
+
 const exchanges = [
   {
     id: 1,
@@ -100,6 +108,14 @@ export default function HomePage() {
             />
           </RecommendArea>
         </Section>
+
+        {appointment && (
+          <Section>
+            <SectionTitle>나의 약속</SectionTitle>
+
+            <AppointmentCard {...appointment} />
+          </Section>
+        )}
 
         <Section>
           <SectionTitle>지금 올라온 교환글</SectionTitle>
