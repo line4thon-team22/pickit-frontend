@@ -4,6 +4,7 @@ import Header from "../../components/header/Header";
 import RecommendBanner from "../../components/area/RecommendBanner";
 import AppointmentCard from "../../components/card/AppointmentCard";
 import ExchangeCard from "../../components/card/ExchangeCard";
+import PopupCard from "../../components/card/PopupCard";
 
 import product1 from "../../assets/images/product/recommend1.png";
 import product2 from "../../assets/images/product/recommend2.png";
@@ -88,6 +89,37 @@ const exchanges = [
   },
 ];
 
+const popups = [
+  {
+    id: 1,
+    title: "캐릭캐릭체인지 X 팝퍼블 콜라보 카페",
+    location: "서울 용산",
+    period: "26.08.14(금) - 11.29(일)",
+    likes: 12,
+  },
+  {
+    id: 2,
+    title: "연도문구 팝업 - 우주정거장 점",
+    location: "서울 용산",
+    period: "26.08.14(금) - 11.29(일)",
+    likes: 12,
+  },
+  {
+    id: 3,
+    title: "애니메이션 주술회전展 - 회옥·옥절, 시부야사변",
+    location: "서울 용산",
+    period: "26.08.14(금) - 11.29(일)",
+    likes: 12,
+  },
+  {
+    id: 4,
+    title: "산리오캐릭터즈 X 롯데월드 아쿠아리움 - 머메이드 파티",
+    location: "서울 용산",
+    period: "26.08.14(금) - 11.29(일)",
+    likes: 12,
+  },
+];
+
 // TODO: 홈 화면 구현 전 빈 페이지
 export default function HomePage() {
   const navigate = useNavigate();
@@ -137,7 +169,11 @@ export default function HomePage() {
         <Section>
           <SectionTitle>요즘 뜨는 팝업</SectionTitle>
 
-          <PopupList>{/* 팝업 카드 */}</PopupList>
+          <PopupList>
+            {popups.map((popup) => (
+              <PopupCard key={popup.id} {...popup} />
+            ))}
+          </PopupList>
         </Section>
       </Wrapper>
     </>
@@ -178,5 +214,6 @@ const ExchangeList = styled.div`
 const PopupList = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 32px;
+  column-gap: 10px;
+  row-gap: 32px;
 `;
