@@ -26,21 +26,24 @@ export default function RecommendCard({
 
 const Card = styled.div`
   width: ${({ $width }) => $width || 160}px;
+  height: ${({ $height }) => $height || 250}px;
 
-  border: 1px solid ${({ $isActive }) => ($isActive ? "#FF006A" : "#FFCCE1")};
+  border: 1px solid ${({ $isActive }) => ($isActive ? "#FF006A" : "#FFB3D1")};
 
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
+  box-sizing: border-box;
 
-  background: ${({ $color }) =>
-    `linear-gradient(
+  background:
+    linear-gradient(
       180deg,
-      ${$color}55 0%,
-      ${$color}22 55%,
+      ${({ $color }) => `${$color}55`} 0%,
+      ${({ $color }) => `${$color}22`} 55%,
       #ffffff 100%
-    )`};
+    ),
+    #ffffff;
 
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const ProductImage = styled.img`
