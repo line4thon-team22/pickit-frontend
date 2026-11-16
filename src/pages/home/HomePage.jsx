@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
 import RecommendBanner from "../../components/area/RecommendBanner";
+import ExchangeCard from "../../components/card/ExchangeCard";
 
 import product1 from "../../assets/images/product/recommend1.png";
 import product2 from "../../assets/images/product/recommend2.png";
@@ -52,6 +53,33 @@ const products = [
   },
 ];
 
+const exchanges = [
+  {
+    id: 1,
+    title: "우사기 미니 피규어",
+    want: "치이카와 미니 피규어",
+    likes: 12,
+    comments: 2,
+    status: "new",
+  },
+  {
+    id: 2,
+    title: "캐캐체 리마 캔뱃지",
+    want: "토마 캔뱃지",
+    likes: 9,
+    comments: 0,
+    status: "new",
+  },
+  {
+    id: 3,
+    title: "아무, 세라 인형",
+    want: "토마 인형",
+    likes: 7,
+    comments: 0,
+    status: "live",
+  },
+];
+
 // TODO: 홈 화면 구현 전 빈 페이지
 export default function HomePage() {
   const navigate = useNavigate();
@@ -76,7 +104,18 @@ export default function HomePage() {
         <Section>
           <SectionTitle>지금 올라온 교환글</SectionTitle>
 
-          <ExchangeList>{/* 교환글 카드 */}</ExchangeList>
+          <ExchangeList>
+            {exchanges.map((exchange) => (
+              <ExchangeCard
+                key={exchange.id}
+                title={exchange.title}
+                want={exchange.want}
+                status={exchange.status}
+                likes={exchange.likes}
+                comments={exchange.comments}
+              />
+            ))}
+          </ExchangeList>
         </Section>
 
         <Section>
@@ -107,6 +146,7 @@ const SectionTitle = styled.h2`
   font-size: 20px;
   font-weight: 600;
   color: #000;
+  padding: 0 12px;
 `;
 
 const RecommendArea = styled.div`
