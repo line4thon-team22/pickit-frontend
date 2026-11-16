@@ -4,6 +4,7 @@ import HomePage from "./pages/home/HomePage";
 import TestPage from "./pages/test/TestPage";
 
 // TODO: 레이아웃 확인용 빈 페이지 (담당자가 실제 화면으로 구현)
+import LoginPage from "./pages/login/LoginPage";
 import PopupPage from "./pages/popup/PopupPage";
 import PopupDetailPage from "./pages/popup/PopupDetailPage";
 import ExchangePage from "./pages/exchange/ExchangePage";
@@ -60,6 +61,17 @@ const router = createBrowserRouter([
       {
         path: "*",
         element: <p style={{ padding: "40px 20px" }}>준비 중인 페이지예요.</p>,
+      },
+    ],
+  },
+  {
+    path: "/login",
+    element: <AppLayout />,
+    children: [
+      {
+        index: true,
+        element: <LoginPage />,
+        handle: { hideNav: true, hideFooter: true },
       },
     ],
   },
