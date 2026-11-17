@@ -37,6 +37,9 @@ function TestPage() {
     { label: "전체 교환", value: "all" },
   ];
 
+  // 헤더 위치 버튼 클릭 예시 useState
+  const [isTestVerified, setIsTestVerified] = useState(false);
+
   // 모달 useState
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -209,6 +212,42 @@ function TestPage() {
         color="#FF006A"
         $width={220}
       />
+
+      {/* 헤더 위치 버튼 상태 확인 (위치 인증 / 팝업 확인) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          헤더 위치 버튼 상태
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header
+              variant="main"
+              showLocationButton
+              onLocationClick={() => alert("위치 인증 클릭!")}
+            />
+          </div>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header
+              variant="main"
+              showLocationButton
+              isLocationVerified
+              onPopupCheckClick={() => alert("팝업 확인 클릭!")}
+            />
+          </div>
+          <p style={{ margin: "0 20px", fontSize: "12px" }}>
+            클릭 예시: 누를 때마다 위치 인증 ↔ 팝업 확인 전환
+          </p>
+          <div style={{ outline: "1px dashed #d0d0d0" }}>
+            <Header
+              variant="main"
+              showLocationButton
+              isLocationVerified={isTestVerified}
+              onLocationClick={() => setIsTestVerified(true)}
+              onPopupCheckClick={() => setIsTestVerified(false)}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
