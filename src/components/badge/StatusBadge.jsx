@@ -16,6 +16,10 @@ export default function StatusBadge({
       ongoing: "예약 중",
       completed: "교환 완료",
     },
+    exchange: {
+      new: "New",
+      live: "Live",
+    },
   };
 
   return (
@@ -47,7 +51,7 @@ const Badge = styled.span`
   box-shadow: ${({ $status }) =>
     $status === "ongoing"
       ? `0 0 0 2px #FF66A6 inset,
-       0 -4px 4px rgba(255, 229, 240, 0.60) inset`
+         0 -4px 4px rgba(255, 229, 240, 0.60) inset`
       : "none"};
 
   color: ${({ $status }) =>
@@ -55,13 +59,21 @@ const Badge = styled.span`
       ? "#727272"
       : $status === "ongoing"
         ? "#fafafa"
-        : "#ff99c3"};
+        : $status === "new"
+          ? "#FF006A"
+          : $status === "live"
+            ? "#FF006A"
+            : "transparent"};
 
   border: 2px solid
     ${({ $status }) =>
       $status === "completed"
         ? "#727272"
         : $status === "ongoing"
-          ? "#none"
-          : "#ff99c3"};
+          ? "transparent"
+          : $status === "new"
+            ? "#FF006A"
+            : $status === "live"
+              ? "#FF006A"
+              : "transparent"};
 `;

@@ -16,6 +16,9 @@ import Header from "../../components/header/Header";
 import BottomNav from "../../components/nav/BottomNav";
 import Footer from "../../components/footer/Footer";
 
+import RecommendCard from "../../components/card/RecomendCard";
+import product1 from "../../assets/images/product/recommend1.png";
+
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
   "../../assets/images/**/*.{svg,png,jpg,jpeg}",
@@ -196,6 +199,16 @@ function TestPage() {
           <Footer />
         </div>
       </div>
+
+      <RecommendCard
+        image={product1}
+        title="베이비 쿠로미 인형"
+        wanted="베이비 헬로키티 인형"
+        location="용산 아이파크몰 6층"
+        time="채팅으로 정해요 :)"
+        color="#FF006A"
+        $width={220}
+      />
     </div>
   );
 }
