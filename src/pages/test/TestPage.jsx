@@ -9,7 +9,6 @@ import SearchBar from "../../components/input/SearchBar";
 import StatusBadge from "../../components/badge/StatusBadge";
 import CategoryButton from "../../components/button/CategoryButton";
 import TopBar from "../../components/bar/TopBar";
-import ModalBase from "../../components/modal/ModalBase";
 import LocationButton from "../../components/button/LocationButton";
 
 import Header from "../../components/header/Header";
@@ -23,6 +22,8 @@ import PopupPosterCard from "../../components/card/PopupPosterCard";
 import FilterChip from "../../components/button/FilterChip";
 import BottomSheet from "../../components/modal/BottomSheet";
 import { popups as popupList } from "../../data/popupDummyData";
+
+import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
@@ -132,31 +133,22 @@ function TestPage() {
         </div>
       </div>
 
-      <div style={{ padding: "40px" }}>
+      <div>
         <CommonButton
           $width={160}
           $height={44}
           $fontSize={14}
           onClick={() => setIsModalOpen(true)}
         >
-          모달 열기
+          로그인 모달
         </CommonButton>
 
-        <ModalBase
+        <LoginRequiredModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          $width={330}
-        >
-          <CommonButton
-            $width={278}
-            $height={46}
-            $fontSize={16}
-            onClick={() => setIsModalOpen(false)}
-          >
-            교환 확정
-          </CommonButton>
-        </ModalBase>
+        />
       </div>
+
       <div>
         <LocationButton onClick={() => alert("위치 버튼 클릭!")}>
           위치 인증
