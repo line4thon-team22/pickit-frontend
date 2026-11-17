@@ -21,6 +21,7 @@ import product1 from "../../assets/images/product/recommend1.png";
 
 import PopupPosterCard from "../../components/card/PopupPosterCard";
 import FilterChip from "../../components/button/FilterChip";
+import BottomSheet from "../../components/modal/BottomSheet";
 import { popups as popupList } from "../../data/popupDummyData";
 
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
@@ -61,6 +62,9 @@ function TestPage() {
         : [...prev, label],
     );
   };
+
+  // 바텀시트 useState
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   return (
     <div>
@@ -331,6 +335,40 @@ function TestPage() {
             </CategoryButton>
           ))}
         </div>
+      </div>
+
+      {/* 바텀시트 확인 (딤 배경·닫기 버튼으로 닫힘) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>바텀시트</p>
+        <CommonButton
+          $width={160}
+          $height={44}
+          $fontSize={14}
+          onClick={() => setIsSheetOpen(true)}
+        >
+          바텀시트 열기
+        </CommonButton>
+
+        <BottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "24px",
+              padding: "0 24px 32px",
+            }}
+          >
+            <p style={{ margin: 0 }}>바텀시트 내용 영역</p>
+            <CommonButton
+              $width={354}
+              $borderRadius={10000}
+              onClick={() => setIsSheetOpen(false)}
+            >
+              닫기
+            </CommonButton>
+          </div>
+        </BottomSheet>
       </div>
     </div>
   );
