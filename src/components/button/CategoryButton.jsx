@@ -1,25 +1,28 @@
 import { useState } from "react";
 import styled from "styled-components";
 
+// selected를 넘기면 부모가 선택 상태를 관리하고, 안 넘기면 버튼이 직접 관리한다
 export default function CategoryButton({
   children,
+  selected,
   defaultSelected = false,
   onChange,
   ...props
 }) {
-  const [selected, setSelected] = useState(defaultSelected);
+  const [innerSelected, setInnerSelected] = useState(defaultSelected);
+  const isSelected = selected ?? innerSelected;
 
   const handleClick = () => {
-    setSelected(!selected);
-    onChange?.(!selected);
+    if (selected === undefined) setInnerSelected(!isSelected);
+    onChange?.(!isSelected);
   };
 
   return (
     <Chip
       type="button"
-      $selected={selected}
+      $selected={isSelected}
       onClick={handleClick}
-      aria-pressed={selected}
+      aria-pressed={isSelected}
       {...props}
     >
       {children}
@@ -49,4 +52,11 @@ const Chip = styled.button`
 
   cursor: pointer;
   box-sizing: border-box;
+
+  /* TODO: 비활성 칩 디자인 확정되면 수정 */
+  &:disabled {
+    border-color: #d0d0d0;
+    color: #d0d0d0;
+    cursor: not-allowed;
+  }
 `;

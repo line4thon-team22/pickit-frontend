@@ -47,6 +47,21 @@ function TestPage() {
   // 모달 useState
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // 카테고리 칩 selected·disabled 예시 useState (부모가 선택 상태 관리)
+  const [testRegions, setTestRegions] = useState([]);
+  const isTestAll = testRegions.includes("전국");
+  const toggleTestRegion = (label) => {
+    if (label === "전국") {
+      setTestRegions(isTestAll ? [] : ["전국"]);
+      return;
+    }
+    setTestRegions((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label],
+    );
+  };
+
   return (
     <div>
       <div
@@ -293,6 +308,28 @@ function TestPage() {
           <FilterChip variant="selected" onClick={() => alert("진행 중 해제!")}>
             진행 중
           </FilterChip>
+        </div>
+      </div>
+
+      {/* 카테고리 칩 selected·disabled 확인 (전국 선택 시 나머지 해제 + 비활성) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          카테고리 칩 selected·disabled
+        </p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          선택: {testRegions.join(", ") || "없음"}
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {["용산", "성수", "잠실", "전국"].map((label) => (
+            <CategoryButton
+              key={label}
+              selected={testRegions.includes(label)}
+              disabled={isTestAll && label !== "전국"}
+              onChange={() => toggleTestRegion(label)}
+            >
+              {label}
+            </CategoryButton>
+          ))}
         </div>
       </div>
     </div>
