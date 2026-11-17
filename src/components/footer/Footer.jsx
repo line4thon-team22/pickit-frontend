@@ -12,7 +12,7 @@ export default function Footer() {
 const Wrapper = styled.footer`
   flex-shrink: 0;
 
-  padding: 120px 24px;
+  padding: 120px 24px 36px;
 
   color: ${({ theme }) => theme.colors.gray[700]};
   ${({ theme }) => theme.typography.body3}
