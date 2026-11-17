@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export default function StatusBadge({
   type = "popup",
@@ -23,7 +23,7 @@ export default function StatusBadge({
   };
 
   return (
-    <Badge $status={status} {...props}>
+    <Badge $type={type} $status={status} {...props}>
       {labels[type]?.[status] || "상태 없음"}
     </Badge>
   );
@@ -76,4 +76,26 @@ const Badge = styled.span`
             : $status === "live"
               ? "#FF006A"
               : "transparent"};
+
+  /* 팝업 상태 뱃지는 아래 스타일로 덮어씀 (피그마 팝업 탭 293:7496) */
+  ${({ $type }) => $type === "popup" && popupStyle}
+`;
+
+const popupColors = {
+  upcoming: { background: "#fafafa", border: "#ff66a6", color: "#ff66a6" },
+  ongoing: { background: "#ff006a", border: "#ff66a6", color: "#fafafa" },
+  completed: { background: "#fafafa", border: "#e3e3e3", color: "#727272" },
+};
+
+const popupStyle = css`
+  height: auto;
+  padding: 3px 10px;
+  border: 1px solid ${({ $status }) => popupColors[$status]?.border};
+  background-color: ${({ $status }) => popupColors[$status]?.background};
+  color: ${({ $status }) => popupColors[$status]?.color};
+  font-weight: 600;
+  box-shadow: ${({ $status }) =>
+    $status === "ongoing"
+      ? "inset 0 -4px 8px rgba(255, 229, 240, 0.6)"
+      : "none"};
 `;
