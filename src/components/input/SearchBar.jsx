@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import searchIcon from "../../assets/images/icon/search.svg";
 
-export default function SearchBar({ ...props }) {
+// onSearchClick: 돋보기 버튼 클릭 시 실행 (input으로는 전달하지 않음)
+export default function SearchBar({ onSearchClick, ...props }) {
   return (
     <Container
       $width={props.$width}
@@ -9,7 +10,7 @@ export default function SearchBar({ ...props }) {
       $borderRadius={props.$borderRadius}
     >
       <Input type="search" placeholder="검색어를 입력해주세요" {...props} />
-      <SearchButton type="button" aria-label="검색">
+      <SearchButton type="button" aria-label="검색" onClick={onSearchClick}>
         <Icon src={searchIcon} alt="" />
       </SearchButton>
     </Container>

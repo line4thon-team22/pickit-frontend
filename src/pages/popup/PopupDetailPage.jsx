@@ -1,29 +1,168 @@
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
+import StatusBadge from "../../components/badge/StatusBadge";
+import CommonButton from "../../components/button/CommonButton";
 
-// TODO: 레이아웃 확인용 빈 페이지 (담당자가 실제 화면으로 구현)
+import { popups } from "../../data/popupDummyData";
+
+// 팝업 상세 화면 (피그마 팝업 상세 257:3150)
 export default function PopupDetailPage() {
+  const { popupId } = useParams();
+
+  // TODO(API): 팝업 상세 조회 API 연동 시 더미 데이터 교체
+  const popup = popups.find((item) => String(item.id) === popupId);
+
+  if (!popup) {
+    return (
+      <>
+        <Header variant="back" />
+        {/* TODO: 없는 팝업 안내 디자인 확정되면 수정 */}
+        <EmptyText>존재하지 않는 팝업이에요</EmptyText>
+      </>
+    );
+  }
+
   return (
     <>
       <Header variant="back" />
-      <Wrapper>
-        <Title>팝업 상세</Title>
-      </Wrapper>
+
+      <Poster>
+        <img src={popup.image} alt={popup.title} />
+      </Poster>
+
+      <InfoSection>
+        <TitleArea>
+          <StatusBadge type="popup" status={popup.status} size="large" />
+          <Title>{popup.title}</Title>
+        </TitleArea>
+
+        <InfoList>
+          <InfoRow>
+            <dt>장소 :</dt>
+            <dd>{popup.address}</dd>
+          </InfoRow>
+          <InfoRow>
+            <dt>날짜 :</dt>
+            <dd>{popup.period}</dd>
+          </InfoRow>
+        </InfoList>
+      </InfoSection>
+
+      <DescriptionArea>
+        <Description>{popup.description}</Description>
+      </DescriptionArea>
+
+      <ButtonArea>
+        {/* TODO: 교환 화면 연결 (이동 경로 미정) */}
+        <CommonButton $width={354} $borderRadius={10000}>
+          상품 교환하기
+        </CommonButton>
+      </ButtonArea>
     </>
   );
 }
 
-const Wrapper = styled.div`
+const Poster = styled.div`
+  width: 100%;
+  height: 480px;
+  border-top: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  overflow: hidden;
+  background-color: #e8e8e8;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+`;
+
+const InfoSection = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e3e3e3;
+`;
 
-  /* 스크롤 확인용 높이 */
-  min-height: 1200px;
-  padding: 20px;
+const TitleArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
+  margin: 0;
+  color: #000;
+  font-size: 24px;
   font-weight: 600;
+  line-height: normal;
+  word-break: keep-all;
+`;
+
+const InfoList = styled.dl`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0 4px;
+`;
+
+// 라벨은 고정, 값이 길면 값 쪽만 줄바꿈
+const InfoRow = styled.div`
+  display: flex;
+  gap: 12px;
+
+  dt,
+  dd {
+    margin: 0;
+    color: ${({ theme }) => theme.colors.gray[700]};
+    font-size: 14px;
+    font-weight: 400;
+    line-height: normal;
+  }
+
+  dt {
+    flex-shrink: 0;
+  }
+
+  dd {
+    flex: 1;
+    min-width: 0;
+  }
+`;
+
+const DescriptionArea = styled.div`
+  padding: 20px;
+`;
+
+const Description = styled.p`
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #e3e3e3;
+  border-radius: 12px;
+  background-color: #fafafa;
+
+  color: ${({ theme }) => theme.colors.gray[900]};
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  white-space: pre-wrap;
+`;
+
+const ButtonArea = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 32px 24px;
+`;
+
+const EmptyText = styled.p`
+  margin: 0;
+  padding: 80px 24px;
+  text-align: center;
+  color: ${({ theme }) => theme.colors.gray[700]};
+  ${({ theme }) => theme.typography.body3};
 `;

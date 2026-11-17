@@ -19,6 +19,11 @@ import Footer from "../../components/footer/Footer";
 import RecommendCard from "../../components/card/RecomendCard";
 import product1 from "../../assets/images/product/recommend1.png";
 
+import PopupPosterCard from "../../components/card/PopupPosterCard";
+import FilterChip from "../../components/button/FilterChip";
+import BottomSheet from "../../components/modal/BottomSheet";
+import { popups as popupList } from "../../data/popupDummyData";
+
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
   "../../assets/images/**/*.{svg,png,jpg,jpeg}",
@@ -42,6 +47,24 @@ function TestPage() {
 
   // 모달 useState
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // 카테고리 칩 selected·disabled 예시 useState (부모가 선택 상태 관리)
+  const [testRegions, setTestRegions] = useState([]);
+  const isTestAll = testRegions.includes("전국");
+  const toggleTestRegion = (label) => {
+    if (label === "전국") {
+      setTestRegions(isTestAll ? [] : ["전국"]);
+      return;
+    }
+    setTestRegions((prev) =>
+      prev.includes(label)
+        ? prev.filter((item) => item !== label)
+        : [...prev, label],
+    );
+  };
+
+  // 바텀시트 useState
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   return (
     <div>
@@ -246,6 +269,117 @@ function TestPage() {
               onPopupCheckClick={() => setIsTestVerified(false)}
             />
           </div>
+        </div>
+      </div>
+
+      {/* 팝업 포스터 카드 확인 (진행 전/중/완료 뱃지, 찜 하트 2종) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          팝업 포스터 카드
+        </p>
+        <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
+          카드 클릭 시 alert, 하트 클릭 시 하트만 토글
+        </p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            columnGap: "10px",
+            rowGap: "32px",
+            maxWidth: "402px",
+            padding: "0 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          {popupList.map((popup) => (
+            <PopupPosterCard
+              key={popup.id}
+              {...popup}
+              onClick={() => alert(`카드 클릭: ${popup.id}`)}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 필터 칩 확인 (필터 버튼 / 선택된 필터 칩) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>필터 칩</p>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <FilterChip onClick={() => alert("필터 버튼 클릭!")} />
+          <FilterChip variant="selected" onClick={() => alert("용산 해제!")}>
+            용산
+          </FilterChip>
+          <FilterChip variant="selected" onClick={() => alert("진행 중 해제!")}>
+            진행 중
+          </FilterChip>
+        </div>
+      </div>
+
+      {/* 카테고리 칩 selected·disabled 확인 (전국 선택 시 나머지 해제 + 비활성) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          카테고리 칩 selected·disabled
+        </p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          선택: {testRegions.join(", ") || "없음"}
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {["용산", "성수", "잠실", "전국"].map((label) => (
+            <CategoryButton
+              key={label}
+              selected={testRegions.includes(label)}
+              disabled={isTestAll && label !== "전국"}
+              onChange={() => toggleTestRegion(label)}
+            >
+              {label}
+            </CategoryButton>
+          ))}
+        </div>
+      </div>
+
+      {/* 바텀시트 확인 (딤 배경·닫기 버튼으로 닫힘) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>바텀시트</p>
+        <CommonButton
+          $width={160}
+          $height={44}
+          $fontSize={14}
+          onClick={() => setIsSheetOpen(true)}
+        >
+          바텀시트 열기
+        </CommonButton>
+
+        <BottomSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "24px",
+              padding: "0 24px 32px",
+            }}
+          >
+            <p style={{ margin: 0 }}>바텀시트 내용 영역</p>
+            <CommonButton
+              $width={354}
+              $borderRadius={10000}
+              onClick={() => setIsSheetOpen(false)}
+            >
+              닫기
+            </CommonButton>
+          </div>
+        </BottomSheet>
+      </div>
+
+      {/* 팝업 상태 뱃지 큰 사이즈 확인 (팝업 상세용 size="large") */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          팝업 상태 뱃지 large
+        </p>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <StatusBadge type="popup" status="upcoming" size="large" />
+          <StatusBadge type="popup" status="ongoing" size="large" />
+          <StatusBadge type="popup" status="completed" size="large" />
         </div>
       </div>
     </div>
