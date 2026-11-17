@@ -19,6 +19,9 @@ import Footer from "../../components/footer/Footer";
 import RecommendCard from "../../components/card/RecomendCard";
 import product1 from "../../assets/images/product/recommend1.png";
 
+import PopupPosterCard from "../../components/card/PopupPosterCard";
+import { popups as popupList } from "../../data/popupDummyData";
+
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
   "../../assets/images/**/*.{svg,png,jpg,jpeg}",
@@ -246,6 +249,35 @@ function TestPage() {
               onPopupCheckClick={() => setIsTestVerified(false)}
             />
           </div>
+        </div>
+      </div>
+
+      {/* 팝업 포스터 카드 확인 (진행 전/중/완료 뱃지, 찜 하트 2종) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          팝업 포스터 카드
+        </p>
+        <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
+          카드 클릭 시 alert, 하트 클릭 시 하트만 토글
+        </p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            columnGap: "10px",
+            rowGap: "32px",
+            maxWidth: "402px",
+            padding: "0 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          {popupList.map((popup) => (
+            <PopupPosterCard
+              key={popup.id}
+              {...popup}
+              onClick={() => alert(`카드 클릭: ${popup.id}`)}
+            />
+          ))}
         </div>
       </div>
     </div>
