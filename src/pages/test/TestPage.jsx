@@ -20,6 +20,7 @@ import RecommendCard from "../../components/card/RecomendCard";
 import product1 from "../../assets/images/product/recommend1.png";
 
 import PopupPosterCard from "../../components/card/PopupPosterCard";
+import FilterChip from "../../components/button/FilterChip";
 import { popups as popupList } from "../../data/popupDummyData";
 
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
@@ -278,6 +279,20 @@ function TestPage() {
               onClick={() => alert(`카드 클릭: ${popup.id}`)}
             />
           ))}
+        </div>
+      </div>
+
+      {/* 필터 칩 확인 (필터 버튼 / 선택된 필터 칩) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>필터 칩</p>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <FilterChip onClick={() => alert("필터 버튼 클릭!")} />
+          <FilterChip variant="selected" onClick={() => alert("용산 해제!")}>
+            용산
+          </FilterChip>
+          <FilterChip variant="selected" onClick={() => alert("진행 중 해제!")}>
+            진행 중
+          </FilterChip>
         </div>
       </div>
     </div>
