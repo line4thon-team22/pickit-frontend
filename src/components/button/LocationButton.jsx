@@ -1,11 +1,20 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import locationIcon from "../../assets/images/icon/location-white.svg";
 
-export default function LocationButton({ children, onClick, ...props }) {
+// 헤더 위치 버튼 (피그마 헤더 Default 228:4129 / Variant5 319:13214)
+// - 인증 전: "위치 인증"
+// - 인증 후(isVerified): "팝업 확인" + 굵은 글자 + 안쪽 그림자
+// children을 넘기면 기본 문구 대신 표시한다
+export default function LocationButton({
+  isVerified = false,
+  children,
+  onClick,
+  ...props
+}) {
   return (
-    <Button type="button" onClick={onClick} {...props}>
+    <Button type="button" $isVerified={isVerified} onClick={onClick} {...props}>
       <Icon src={locationIcon} alt="" />
-      {children}
+      {children ?? (isVerified ? "팝업 확인" : "위치 인증")}
     </Button>
   );
 }
@@ -33,6 +42,13 @@ const Button = styled.button`
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
+
+  ${({ $isVerified }) =>
+    $isVerified &&
+    css`
+      font-weight: 600;
+      box-shadow: inset 0 -4px 8px rgba(255, 229, 240, 0.6);
+    `}
 
   &::after {
     content: "";

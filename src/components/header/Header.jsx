@@ -9,15 +9,21 @@ import starIcon from "../../assets/images/icon/star.svg";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
 
 // variant
-// - "main": 로고 + 알림 + MY (showLocationButton이면 위치 인증 버튼 추가)
+// - "main": 로고 + 알림 + MY (showLocationButton이면 위치 버튼 추가)
+//   위치 버튼은 isLocationVerified에 따라 "위치 인증" / "팝업 확인"으로 바뀜
 // - "chat": 뒤로가기 + 상대 프로필·닉네임·평점
 // - "back": 뒤로가기만
 export default function Header({
   variant = "main",
   showLocationButton = false,
+  // TODO: 위치 인증 상태를 전역 상태로 관리
+  // (홈/교환/찜이 같은 상태를 쓰므로, 옮기면 prop 대신 헤더 안에서 바로 읽기)
+  isLocationVerified = false,
   user,
   onBack,
   onLocationClick,
+  // TODO: 현재 인증한 팝업 상세로 이동
+  onPopupCheckClick,
   // TODO: 알림·MY 동작이 정해지면 prop 대신 헤더 안에서 바로 이동하도록 변경
   // (어느 페이지에서 눌러도 같은 곳으로 가므로 페이지마다 넘길 필요 없음)
   onNotificationClick,
@@ -34,7 +40,10 @@ export default function Header({
         </Link>
         <Actions>
           {showLocationButton && (
-            <LocationButton onClick={onLocationClick}>위치 인증</LocationButton>
+            <LocationButton
+              isVerified={isLocationVerified}
+              onClick={isLocationVerified ? onPopupCheckClick : onLocationClick}
+            />
           )}
           <IconButton
             type="button"
