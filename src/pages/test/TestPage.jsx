@@ -370,6 +370,18 @@ function TestPage() {
           </div>
         </BottomSheet>
       </div>
+
+      {/* 팝업 상태 뱃지 큰 사이즈 확인 (팝업 상세용 size="large") */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          팝업 상태 뱃지 large
+        </p>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <StatusBadge type="popup" status="upcoming" size="large" />
+          <StatusBadge type="popup" status="ongoing" size="large" />
+          <StatusBadge type="popup" status="completed" size="large" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import styled, { css } from "styled-components";
 
+// size: popup 타입에서만 사용. "large"는 팝업 상세용 큰 뱃지 (피그마 팝업 상세 257:3150)
 export default function StatusBadge({
   type = "popup",
   status = "upcoming",
+  size = "small",
   ...props
 }) {
   const labels = {
@@ -23,7 +25,7 @@ export default function StatusBadge({
   };
 
   return (
-    <Badge $type={type} $status={status} {...props}>
+    <Badge $type={type} $status={status} $size={size} {...props}>
       {labels[type]?.[status] || "상태 없음"}
     </Badge>
   );
@@ -89,7 +91,8 @@ const popupColors = {
 
 const popupStyle = css`
   height: auto;
-  padding: 3px 10px;
+  padding: ${({ $size }) => ($size === "large" ? "3px 16px" : "3px 10px")};
+  font-size: ${({ $size }) => ($size === "large" ? 16 : 10)}px;
   border: 1px solid ${({ $status }) => popupColors[$status]?.border};
   background-color: ${({ $status }) => popupColors[$status]?.background};
   color: ${({ $status }) => popupColors[$status]?.color};
