@@ -33,7 +33,7 @@ export default function MyLocationPopupList({
   );
 
   if (!isLocationVerified) {
-    // TODO: 위치 미인증 예외 화면 디자인 확정 후 교체 (피그마 677:8158 수정 중)
+    // 위치 미인증 예외 화면 (피그마 677:8158 문구, 모달 대신 흐린 배경 오버레이)
     // 배경은 인증 후 보일 목록과 같은 더미 데이터를 흐리게 사용
     return (
       <BlurOverlay

@@ -97,8 +97,8 @@ const Badge = styled.span`
   ${({ $type }) => $type === "popup" && popupStyle}
 `;
 
-// TODO: 상세 뱃지(예약 중/Live/New) 디자인 확인
-// 피그마에 방금 전·교환 완료만 있어서, 나머지는 작은 뱃지와 같은 색으로 크기만 키움
+// 교환글 상세용 큰 뱃지
+// 방금 전·교환 완료는 피그마 기준, 예약 중·Live·New는 작은 뱃지와 같은 색으로 크기만 키움
 const largeStyle = css`
   padding: 2px 16px;
   font-size: 16px;

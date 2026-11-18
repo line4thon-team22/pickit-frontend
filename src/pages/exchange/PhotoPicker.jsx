@@ -8,7 +8,7 @@ export const MAX_PHOTOS = 5;
 
 // 교환글 작성 사진 선택 (피그마 카메라 박스 711:8569)
 // - photos: [{ id, url }] (부모가 관리, 배열 순서 = 업로드 순서)
-// - 카메라 박스 오른쪽에 고른 사진을 같은 크기로 가로 나열 (여러 장 디자인 없음, 임시)
+// - 카메라 박스 오른쪽에 고른 사진을 같은 크기로 가로 나열, 썸네일마다 삭제 버튼
 // - capture 속성 없이 열어서 폰에서 "사진 찍기 / 보관함" 선택창이 뜨게 함
 export default function PhotoPicker({
   photos = [],
@@ -59,7 +59,6 @@ export default function PhotoPicker({
         aria-label="사진 추가"
       >
         <img src={cameraIcon} alt="" />
-        {/* TODO: 여러 장 디자인 확정되면 수정 (장수 표시는 임시) */}
         {photos.length > 0 && (
           <Count>
             {photos.length}/{max}
@@ -78,7 +77,6 @@ export default function PhotoPicker({
       {photos.map((photo, index) => (
         <Thumb key={photo.id}>
           <img src={photo.url} alt={`첨부 사진 ${index + 1}`} />
-          {/* TODO: 삭제 버튼 디자인 확정되면 수정 */}
           <RemoveButton
             type="button"
             onClick={() => onRemove?.(photo.id)}

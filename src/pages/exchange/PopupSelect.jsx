@@ -79,7 +79,7 @@ export default function PopupSelect({
   return (
     <Container ref={containerRef}>
       <Trigger $isOpen={isOpen}>
-        {/* TODO: 검색 UI 디자인 확인 (열렸을 때 placeholder는 임시 문구) */}
+        {/* 열렸을 때는 검색 안내 문구로 바뀜 */}
         <Input
           ref={inputRef}
           role="combobox"
