@@ -49,7 +49,7 @@ export default function ExchangePage() {
         <AllExchangeList />
       )}
 
-      {/* TODO: 교환글 작성 화면에서 팝업 선택 방식 확정 후 연결 확인 */}
+      {/* 팝업은 작성 화면에서 선택 (넘기는 popupId 없음) */}
       <FloatingAddButton
         aria-label="교환글 작성"
         onClick={() => navigate("/exchange/write")}

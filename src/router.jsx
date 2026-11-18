@@ -11,6 +11,7 @@ import PopupDetailPage from "./pages/popup/PopupDetailPage";
 import ExchangePage from "./pages/exchange/ExchangePage";
 import ExchangeBoardPage from "./pages/exchange/ExchangeBoardPage";
 import ExchangePostDetailPage from "./pages/exchange/ExchangePostDetailPage";
+import ExchangeWritePage from "./pages/exchange/ExchangeWritePage";
 import WishPage from "./pages/wish/WishPage";
 import ChatPage from "./pages/chat/ChatPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
@@ -58,6 +59,11 @@ const router = createBrowserRouter([
       {
         path: "exchange/post/:postId",
         element: <ExchangePostDetailPage />,
+        handle: { hideNav: true, hideFooter: true },
+      },
+      {
+        path: "exchange/write",
+        element: <ExchangeWritePage />,
         handle: { hideNav: true, hideFooter: true },
       },
       { path: "wish", element: <WishPage /> },
