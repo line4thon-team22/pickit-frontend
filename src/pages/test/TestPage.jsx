@@ -579,6 +579,40 @@ function TestPage() {
         </p>
         <ImageSlider images={multiPhotoPost.images} isDimmed />
       </div>
+
+      {/* PopupCard 찜 하트 확인 (하트 없음 / 찜한 상태 / 찜 안 한 상태, 찜 탭용 showLikeButton) */}
+      <div style={{ padding: "40px 24px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          PopupCard 찜 하트
+        </p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          하트를 누르면 하트만 바뀌고, 카드 나머지를 누르면 카드 클릭 알림
+        </p>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: "32px 10px",
+          }}
+        >
+          <PopupCard
+            {...popupList[0]}
+            onClick={() => alert("카드 클릭! (하트 없음)")}
+          />
+          <PopupCard
+            {...popupList[1]}
+            showLikeButton
+            isLiked
+            onClick={() => alert("카드 클릭! (찜한 상태)")}
+          />
+          <PopupCard
+            {...popupList[2]}
+            showLikeButton
+            isLiked={false}
+            onClick={() => alert("카드 클릭! (찜 안 한 상태)")}
+          />
+        </div>
+      </div>
     </div>
   );
 }
