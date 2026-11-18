@@ -13,6 +13,7 @@ export const myLocationPopupIds = [1, 3, 4, 2];
 // - locationStatus: 위치 기반 상태 live / justLeft(방금 전) / new(일반 교환)
 //   TODO(API): 서버가 계산해서 내려준 값을 그대로 표시 (docs/notes/location-status.md)
 // - tradeStatus: 교환 상태 null(교환 가능) / reserved(예약 중) / completed(교환 완료)
+// - images: 사진 URL 배열 (배열 순서 = 사진 순서, 카드·상세는 첫 장 사용)
 // - date, place, time, description, author: 상세 화면용
 //   TODO(API): 날짜 형식(문자열/ISO) 확인
 // 제목·구함·찜·댓글 수는 피그마 교환 보드(293:12390, 669:7709), 전체 교환(447:21626), 상세(293:12527) 기준
@@ -22,7 +23,7 @@ export const exchangePosts = [
     popupId: 1,
     title: "아무, 세라 인형",
     want: "토마 인형",
-    image: product1,
+    images: [product1, product4],
     locationStatus: "live",
     tradeStatus: "reserved",
     likes: 7,
@@ -40,7 +41,7 @@ export const exchangePosts = [
     popupId: 1,
     title: "캐캐체 리마 캔뱃지",
     want: "토마 캔뱃지",
-    image: product2,
+    images: [product2],
     locationStatus: "live",
     tradeStatus: null,
     likes: 9,
@@ -58,7 +59,7 @@ export const exchangePosts = [
     popupId: 1,
     title: "케이, 토마 캔뱃지",
     want: "히나모리 아무 캔뱃지",
-    image: product3,
+    images: [product3, product1, product2],
     locationStatus: "justLeft",
     tradeStatus: null,
     likes: 10,
@@ -76,7 +77,7 @@ export const exchangePosts = [
     popupId: 1,
     title: "캐캐체 리마 캔뱃지",
     want: "토마 캔뱃지",
-    image: product4,
+    images: [product4],
     locationStatus: "new",
     tradeStatus: null,
     likes: 9,
@@ -93,7 +94,7 @@ export const exchangePosts = [
     popupId: 1,
     title: "케이, 토마 캔뱃지",
     want: "아무 캔뱃지",
-    image: product5,
+    images: [product5],
     locationStatus: "new",
     tradeStatus: "completed",
     likes: 10,
@@ -111,7 +112,7 @@ export const exchangePosts = [
     popupId: 2,
     title: "우사기 미니 피규어",
     want: "치이카와 미니 피규어",
-    image: product1,
+    images: [product1],
     locationStatus: "new",
     tradeStatus: null,
     likes: 12,
@@ -128,7 +129,7 @@ export const exchangePosts = [
     popupId: 2,
     title: "우사기 미니 피규어",
     want: "치이카와 미니 피규어",
-    image: product2,
+    images: [product2],
     locationStatus: "new",
     tradeStatus: "completed",
     likes: 12,
@@ -145,7 +146,7 @@ export const exchangePosts = [
     popupId: 2,
     title: "쿠로미 키링",
     want: "마이멜로디 키링",
-    image: product3,
+    images: [product3],
     locationStatus: "live",
     tradeStatus: null,
     likes: 5,

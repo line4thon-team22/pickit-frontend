@@ -25,7 +25,7 @@ export const isTradeClosed = (post) => post.tradeStatus != null;
 export const toExchangeCardProps = (post) => {
   const badge = getExchangeBadge(post);
   return {
-    image: post.image,
+    image: post.images[0], // 카드는 첫 장만 표시
     title: post.title,
     want: post.want,
     likes: post.likes,

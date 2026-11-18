@@ -50,7 +50,7 @@ export default function ExchangePostDetailPage() {
 
       <PhotoArea>
         <Photo $isDimmed={isTradeClosed(post)}>
-          <img src={post.image} alt={post.title} />
+          <img src={post.images[0]} alt={post.title} />
         </Photo>
 
         {showLikeButton && (

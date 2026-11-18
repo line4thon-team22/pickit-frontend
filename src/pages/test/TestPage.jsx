@@ -432,7 +432,7 @@ function TestPage() {
             return (
               <ExchangeCard
                 key={post.id}
-                image={post.image}
+                image={post.images[0]}
                 title={post.title}
                 want={post.want}
                 likes={post.likes}
