@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import styled from "styled-components";
 import LocationButton from "../button/LocationButton";
 import logo from "../../assets/images/logo/logo.svg";
@@ -7,6 +8,8 @@ import myIcon from "../../assets/images/icon/my.svg";
 import backIcon from "../../assets/images/icon/back.svg";
 import starIcon from "../../assets/images/icon/star.svg";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
+
+import LoginRequiredModal from "../modal/LoginRequiredModal";
 
 // variant
 // - "main": 로고 + 알림 + MY (showLocationButton이면 위치 버튼 추가)
@@ -32,31 +35,60 @@ export default function Header({
   const navigate = useNavigate();
   const handleBack = onBack ?? (() => navigate(-1));
 
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // TODO: 추후 실제 로그인 상태로 교체
+  const isLoggedIn = true;
+
+  const handleMyClick = () => {
+    if (isLoggedIn) {
+      navigate("/my");
+    } else {
+      setIsLoginModalOpen(true);
+    }
+  };
+
   if (variant === "main") {
     return (
-      <Wrapper>
-        <Link to="/" aria-label="홈으로">
-          <Logo src={logo} alt="PICKIT" />
-        </Link>
-        <Actions>
-          {showLocationButton && (
-            <LocationButton
-              isVerified={isLocationVerified}
-              onClick={isLocationVerified ? onPopupCheckClick : onLocationClick}
-            />
-          )}
-          <IconButton
-            type="button"
-            onClick={onNotificationClick}
-            aria-label="알림"
-          >
-            <img src={bellIcon} alt="" />
-          </IconButton>
-          <IconButton type="button" onClick={onMyClick} aria-label="마이페이지">
-            <img src={myIcon} alt="" />
-          </IconButton>
-        </Actions>
-      </Wrapper>
+      <>
+        <Wrapper>
+          <Link to="/" aria-label="홈으로">
+            <Logo src={logo} alt="PICKIT" />
+          </Link>
+
+          <Actions>
+            {showLocationButton && (
+              <LocationButton
+                isVerified={isLocationVerified}
+                onClick={
+                  isLocationVerified ? onPopupCheckClick : onLocationClick
+                }
+              />
+            )}
+
+            <IconButton
+              type="button"
+              onClick={onNotificationClick}
+              aria-label="알림"
+            >
+              <img src={bellIcon} alt="" />
+            </IconButton>
+
+            <IconButton
+              type="button"
+              onClick={onMyClick ?? handleMyClick}
+              aria-label="마이페이지"
+            >
+              <img src={myIcon} alt="" />
+            </IconButton>
+          </Actions>
+        </Wrapper>
+
+        <LoginRequiredModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
+      </>
     );
   }
 
