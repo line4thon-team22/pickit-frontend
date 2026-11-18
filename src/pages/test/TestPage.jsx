@@ -32,6 +32,10 @@ import FloatingAddButton from "../../components/button/FloatingAddButton";
 import { exchangePosts } from "../../data/exchangeDummyData";
 import { getExchangeBadge, isTradeClosed } from "../exchange/exchangeUtils";
 
+import PhotoPicker from "../exchange/PhotoPicker";
+import PopupSelect from "../exchange/PopupSelect";
+import { myLocationPopupIds } from "../../data/exchangeDummyData";
+
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
   "../../assets/images/**/*.{svg,png,jpg,jpeg}",
@@ -76,6 +80,20 @@ function TestPage() {
 
   // 플로팅 버튼 표시 여부 (고정 위치라 다른 테스트를 가리지 않도록 토글)
   const [isFabVisible, setIsFabVisible] = useState(false);
+
+  // 사진 선택 예시 (고른 파일을 미리보기 URL로 변환, 테스트라 URL 해제는 생략)
+  const [testPhotos, setTestPhotos] = useState([]);
+  const addTestPhotos = (files) =>
+    setTestPhotos((prev) => [
+      ...prev,
+      ...files.map((file) => ({
+        id: crypto.randomUUID(),
+        url: URL.createObjectURL(file),
+      })),
+    ]);
+
+  // 팝업 선택 예시
+  const [testPopupId, setTestPopupId] = useState(null);
 
   return (
     <div>
@@ -491,6 +509,34 @@ function TestPage() {
         {isFabVisible && (
           <FloatingAddButton onClick={() => alert("+ 버튼 클릭!")} />
         )}
+      </div>
+
+      {/* 교환글 작성 사진 선택 확인 (카메라 박스 → 사진 여러 장 가로 나열, 삭제) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          사진 선택 (최대 5장)
+        </p>
+        <PhotoPicker
+          photos={testPhotos}
+          onAdd={addTestPhotos}
+          onRemove={(id) =>
+            setTestPhotos((prev) => prev.filter((photo) => photo.id !== id))
+          }
+        />
+      </div>
+
+      {/* 교환글 작성 팝업 선택 확인 (내 현장 팝업 분홍, 검색, 키보드·목록 동작) */}
+      <div style={{ padding: "40px 24px 240px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>팝업 선택</p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          선택: {testPopupId ?? "없음"}
+        </p>
+        <PopupSelect
+          popups={popupList}
+          highlightIds={myLocationPopupIds.slice(0, 2)}
+          selectedId={testPopupId}
+          onSelect={setTestPopupId}
+        />
       </div>
     </div>
   );
