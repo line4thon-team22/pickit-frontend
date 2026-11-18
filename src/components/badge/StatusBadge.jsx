@@ -1,6 +1,8 @@
 import styled, { css } from "styled-components";
 
-// size: popup 타입에서만 사용. "large"는 팝업 상세용 큰 뱃지 (피그마 팝업 상세 257:3150)
+// size: "large"는 상세 화면용 큰 뱃지
+// - popup: 팝업 상세 (피그마 257:3150)
+// - reservation·exchange: 교환글 상세 (피그마 방금 전 293:12534, 교환 완료 439:21577)
 export default function StatusBadge({
   type = "popup",
   status = "upcoming",
@@ -31,9 +33,10 @@ export default function StatusBadge({
   );
 }
 
+// 교환글 뱃지 수치: 피그마 홈 254:2721, 교환 보드 293:12409, 전체 교환 447:22088
 const Badge = styled.span`
   width: fit-content;
-  height: 24px;
+  height: auto;
   padding: 2px 6px;
   box-sizing: border-box;
   border-radius: 10000px;
@@ -52,10 +55,14 @@ const Badge = styled.span`
 
   box-shadow: ${({ $status }) =>
     $status === "ongoing"
-      ? `0 0 0 2px #FF66A6 inset,
-         0 -4px 4px rgba(255, 229, 240, 0.60) inset`
+      ? "0 -4px 4px rgba(255, 229, 240, 0.60) inset"
       : "none"};
 
+  /* 예약 중: 피그마에서 투명도 80% (popup 타입 진행 중에는 적용 안 함) */
+  opacity: ${({ $type, $status }) =>
+    $type === "reservation" && $status === "ongoing" ? 0.8 : 1};
+
+  /* upcoming: 방금 전 (피그마 교환 보드 293:12409) */
   color: ${({ $status }) =>
     $status === "completed"
       ? "#727272"
@@ -65,22 +72,46 @@ const Badge = styled.span`
           ? "#FF006A"
           : $status === "live"
             ? "#FF006A"
-            : "transparent"};
+            : $status === "upcoming"
+              ? "#ff99c3"
+              : "transparent"};
 
-  border: 2px solid
+  border: 1.5px solid
     ${({ $status }) =>
       $status === "completed"
         ? "#727272"
         : $status === "ongoing"
-          ? "transparent"
+          ? "#ff66a6"
           : $status === "new"
             ? "#FF006A"
             : $status === "live"
               ? "#FF006A"
-              : "transparent"};
+              : $status === "upcoming"
+                ? "#ff99c3"
+                : "transparent"};
+
+  /* 교환글 상세용 큰 뱃지 */
+  ${({ $type, $size }) => $type !== "popup" && $size === "large" && largeStyle}
 
   /* 팝업 상태 뱃지는 아래 스타일로 덮어씀 (피그마 팝업 탭 293:7496) */
   ${({ $type }) => $type === "popup" && popupStyle}
+`;
+
+// TODO: 상세 뱃지(예약 중/Live/New) 디자인 확인
+// 피그마에 방금 전·교환 완료만 있어서, 나머지는 작은 뱃지와 같은 색으로 크기만 키움
+const largeStyle = css`
+  padding: 2px 16px;
+  font-size: 16px;
+  font-weight: 600;
+
+  /* 교환 완료: 팝업 '진행 완료' 큰 뱃지와 같은 회색 배경 스타일 */
+  ${({ $status }) =>
+    $status === "completed" &&
+    css`
+      padding: 3px 16px;
+      border: 1px solid #e3e3e3;
+      background-color: #fafafa;
+    `}
 `;
 
 const popupColors = {

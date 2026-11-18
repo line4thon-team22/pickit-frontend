@@ -374,8 +374,53 @@ function TestPage() {
           <StatusBadge type="popup" status="completed" size="large" />
         </div>
       </div>
+
+      {/* 교환글 상태 뱃지 small 확인 (Live / New / 방금 전 / 예약 중 / 교환 완료) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          교환글 상태 뱃지 small
+        </p>
+        <div style={{ display: "flex", gap: "12px" }}>
+          {EXCHANGE_BADGES.map(({ type, status }) => (
+            <StatusBadge
+              key={`${type}-${status}`}
+              type={type}
+              status={status}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 교환글 상태 뱃지 large 확인 (교환글 상세용) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          교환글 상태 뱃지 large
+        </p>
+        <p style={{ marginBottom: "8px", fontSize: "12px" }}>
+          방금 전·교환 완료만 피그마 기준, 나머지는 임시
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+          {EXCHANGE_BADGES.map(({ type, status }) => (
+            <StatusBadge
+              key={`${type}-${status}`}
+              type={type}
+              status={status}
+              size="large"
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
+// 교환글 상태 뱃지 확인용 (Live / New / 방금 전 / 예약 중 / 교환 완료)
+const EXCHANGE_BADGES = [
+  { type: "exchange", status: "live" },
+  { type: "exchange", status: "new" },
+  { type: "reservation", status: "upcoming" },
+  { type: "reservation", status: "ongoing" },
+  { type: "reservation", status: "completed" },
+];
 
 export default TestPage;
