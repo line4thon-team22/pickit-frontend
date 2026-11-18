@@ -26,7 +26,9 @@ export default function InterestSettingPage() {
     // TODO(API): 관심 카테고리 저장
     console.log("선택한 관심 카테고리:", selectedCategories);
 
-    navigate("/my");
+    navigate("/", {
+      state: { showInterestModal: true },
+    });
   };
 
   return (
