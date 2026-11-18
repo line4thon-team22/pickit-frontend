@@ -25,6 +25,13 @@ import { popups as popupList } from "../../data/popupDummyData";
 
 import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 
+import ExchangeCard from "../../components/card/ExchangeCard";
+import PopupCard from "../../components/card/PopupCard";
+import BlurOverlay from "../../components/area/BlurOverlay";
+import FloatingAddButton from "../../components/button/FloatingAddButton";
+import { exchangePosts } from "../../data/exchangeDummyData";
+import { getExchangeBadge, isTradeClosed } from "../exchange/exchangeUtils";
+
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
   "../../assets/images/**/*.{svg,png,jpg,jpeg}",
@@ -66,6 +73,9 @@ function TestPage() {
 
   // 바텀시트 useState
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // 플로팅 버튼 표시 여부 (고정 위치라 다른 테스트를 가리지 않도록 토글)
+  const [isFabVisible, setIsFabVisible] = useState(false);
 
   return (
     <div>
@@ -409,6 +419,78 @@ function TestPage() {
             />
           ))}
         </div>
+      </div>
+
+      {/* 교환글 카드 확인 (사진, 상태 태그 규칙, 예약 중·교환 완료 사진 어둡게) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          교환글 카드 (exchangeDummyData)
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {exchangePosts.slice(0, 5).map((post) => {
+            const badge = getExchangeBadge(post);
+            return (
+              <ExchangeCard
+                key={post.id}
+                image={post.image}
+                title={post.title}
+                want={post.want}
+                likes={post.likes}
+                comments={post.comments}
+                badgeType={badge.type}
+                status={badge.status}
+                isDimmed={isTradeClosed(post)}
+                onClick={() => alert(`교환글 클릭: ${post.id}`)}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 흐린 배경 오버레이 확인 (위치 미인증 내 현장 팝업 예시) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          흐린 배경 오버레이
+        </p>
+        <BlurOverlay
+          title="위치 인증이 필요한 서비스입니다."
+          description="위치 인증하고 팝업 현장에서 굿즈를 교환해 보세요!"
+          buttonText="위치 인증하러 가기"
+          onButtonClick={() => alert("위치 인증하러 가기 클릭!")}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              columnGap: "10px",
+              rowGap: "32px",
+              padding: "24px",
+            }}
+          >
+            {popupList.map((popup) => (
+              <PopupCard key={popup.id} {...popup} />
+            ))}
+          </div>
+        </BlurOverlay>
+      </div>
+
+      {/* 플로팅 "+" 버튼 확인 (화면 오른쪽 아래 고정) */}
+      <div style={{ padding: "40px 20px 120px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>플로팅 버튼</p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          /test는 내비가 없어서 버튼 아래가 비어 보이는 게 정상
+        </p>
+        <CommonButton
+          $width={160}
+          $height={44}
+          $fontSize={14}
+          onClick={() => setIsFabVisible((prev) => !prev)}
+        >
+          {isFabVisible ? "플로팅 버튼 숨기기" : "플로팅 버튼 보기"}
+        </CommonButton>
+        {isFabVisible && (
+          <FloatingAddButton onClick={() => alert("+ 버튼 클릭!")} />
+        )}
       </div>
     </div>
   );
