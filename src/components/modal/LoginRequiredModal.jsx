@@ -9,7 +9,12 @@ export default function LoginRequiredModal({ isOpen, onClose }) {
   const navigate = useNavigate();
 
   return (
-    <ModalBase isOpen={isOpen} onClose={onClose} $width={300}>
+    <ModalBase
+      isOpen={isOpen}
+      onClose={onClose}
+      $width={350}
+      style={{ padding: "20px 24px" }}
+    >
       <Content>
         <AlertIcon src={alertIcon} alt="" />
 
@@ -58,7 +63,11 @@ const Title = styled.p`
 
 const Description = styled.p`
   margin: 0 0 10px;
+
   font-size: 14px;
   color: #727272;
-  white-space: nowrap;
+  text-align: center;
+
+  white-space: normal;
+  overflow-wrap: break-word;
 `;
