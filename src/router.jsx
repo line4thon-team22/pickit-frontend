@@ -10,6 +10,7 @@ import PopupPage from "./pages/popup/PopupPage";
 import PopupDetailPage from "./pages/popup/PopupDetailPage";
 import ExchangePage from "./pages/exchange/ExchangePage";
 import ExchangeBoardPage from "./pages/exchange/ExchangeBoardPage";
+import ExchangePostDetailPage from "./pages/exchange/ExchangePostDetailPage";
 import WishPage from "./pages/wish/WishPage";
 import ChatPage from "./pages/chat/ChatPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
@@ -53,6 +54,11 @@ const router = createBrowserRouter([
         path: "exchange/board/:popupId",
         element: <ExchangeBoardPage />,
         handle: { hideFooter: true },
+      },
+      {
+        path: "exchange/post/:postId",
+        element: <ExchangePostDetailPage />,
+        handle: { hideNav: true, hideFooter: true },
       },
       { path: "wish", element: <WishPage /> },
       { path: "chat", element: <ChatPage />, handle: { hideFooter: true } },

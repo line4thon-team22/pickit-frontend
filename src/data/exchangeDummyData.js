@@ -133,7 +133,7 @@ export const exchangePosts = [
     tradeStatus: "completed",
     likes: 12,
     comments: 2,
-    isLiked: false,
+    isLiked: true, // 교환 완료 + 이미 찜한 경우 확인용
     date: "2026. 11. 10",
     place: "잠실역 8번 출구",
     time: "채팅으로 협의해요 :)",
