@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
 import StatusBadge from "../../components/badge/StatusBadge";
@@ -8,6 +8,7 @@ import { popups } from "../../data/popupDummyData";
 
 // 팝업 상세 화면 (피그마 팝업 상세 257:3150)
 export default function PopupDetailPage() {
+  const navigate = useNavigate();
   const { popupId } = useParams();
 
   // TODO(API): 팝업 상세 조회 API 연동 시 더미 데이터 교체
@@ -54,8 +55,12 @@ export default function PopupDetailPage() {
       </DescriptionArea>
 
       <ButtonArea>
-        {/* TODO: 교환 화면 연결 (이동 경로 미정) */}
-        <CommonButton $width={354} $borderRadius={10000}>
+        {/* 이 팝업의 교환 보드로 이동 */}
+        <CommonButton
+          $width={354}
+          $borderRadius={10000}
+          onClick={() => navigate(`/exchange/board/${popup.id}`)}
+        >
           상품 교환하기
         </CommonButton>
       </ButtonArea>

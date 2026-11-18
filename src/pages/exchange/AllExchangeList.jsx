@@ -5,7 +5,7 @@ import SearchBar from "../../components/input/SearchBar";
 import ExchangeCard from "../../components/card/ExchangeCard";
 
 import { exchangePosts } from "../../data/exchangeDummyData";
-import { getExchangeBadge, isTradeClosed } from "./exchangeUtils";
+import { toExchangeCardProps } from "./exchangeUtils";
 
 // 교환 탭 - 전체 교환 (피그마 447:21626)
 // 전체 교환글을 모아보고 검색하는 화면
@@ -49,23 +49,13 @@ export default function AllExchangeList() {
 
       {filteredPosts.length > 0 ? (
         <PostList>
-          {filteredPosts.map((post) => {
-            const badge = getExchangeBadge(post);
-            return (
-              <ExchangeCard
-                key={post.id}
-                image={post.image}
-                title={post.title}
-                want={post.want}
-                likes={post.likes}
-                comments={post.comments}
-                badgeType={badge.type}
-                status={badge.status}
-                isDimmed={isTradeClosed(post)}
-                onClick={() => navigate(`/exchange/post/${post.id}`)}
-              />
-            );
-          })}
+          {filteredPosts.map((post) => (
+            <ExchangeCard
+              key={post.id}
+              {...toExchangeCardProps(post)}
+              onClick={() => navigate(`/exchange/post/${post.id}`)}
+            />
+          ))}
         </PostList>
       ) : (
         // TODO: 검색 결과 없음 디자인 확정되면 수정

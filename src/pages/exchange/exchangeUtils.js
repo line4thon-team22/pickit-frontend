@@ -21,6 +21,21 @@ export const getExchangeBadge = ({ tradeStatus, locationStatus }) => {
 // 예약 중·교환 완료 글: 사진을 어둡게 표시
 export const isTradeClosed = (post) => post.tradeStatus != null;
 
+// 교환글 데이터 → ExchangeCard props (전체 교환·교환 보드 목록 공통)
+export const toExchangeCardProps = (post) => {
+  const badge = getExchangeBadge(post);
+  return {
+    image: post.image,
+    title: post.title,
+    want: post.want,
+    likes: post.likes,
+    comments: post.comments,
+    badgeType: badge.type,
+    status: badge.status,
+    isDimmed: isTradeClosed(post),
+  };
+};
+
 // 교환 보드 탭 구분: 현장 교환(live, 방금 전) / 일반 교환(new)
 export const isOnSiteExchange = (post) =>
   post.locationStatus === "live" || post.locationStatus === "justLeft";
