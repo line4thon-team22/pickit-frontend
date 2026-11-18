@@ -192,6 +192,13 @@ const List = styled.ul`
   list-style: none;
   overflow-y: auto;
   overscroll-behavior: contain;
+
+  /* 스크롤바 숨김 (맨 아래 항목이 잘려 보여서 더 내릴 수 있다는 게 보임) */
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 // 피그마: 좌우 16, 위아래 7, 10px / 배경 #f6f6f6

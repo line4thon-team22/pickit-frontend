@@ -61,6 +61,13 @@ const ScrollArea = styled.div`
   overflow-y: auto;
   overscroll-behavior: contain;
 
+  /* 스크롤바 숨김 (스크롤은 그대로 동작). 데스크톱에서 스크롤바 폭만큼 화면이 밀리는 것 방지 */
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
   /* 내비가 있으면 본문 끝이 내비에 가리지 않도록 내비 높이 + 아래 간격만큼 여백 확보
      (푸터 아래 여백 36px과 합쳐 피그마 홈 157:2203의 푸터~내비 간격과 맞춤) */
   padding-bottom: ${({ $hasNav, theme }) =>
