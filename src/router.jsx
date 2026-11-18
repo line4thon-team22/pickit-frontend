@@ -42,7 +42,12 @@ const router = createBrowserRouter([
         element: <PopupDetailPage />,
         handle: { hideNav: true, hideFooter: true },
       },
-      { path: "exchange", element: <ExchangePage /> },
+      // 교환 목록은 계속 스크롤되므로 푸터 숨김
+      {
+        path: "exchange",
+        element: <ExchangePage />,
+        handle: { hideFooter: true },
+      },
       { path: "wish", element: <WishPage /> },
       { path: "chat", element: <ChatPage />, handle: { hideFooter: true } },
       {

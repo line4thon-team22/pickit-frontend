@@ -1,29 +1,59 @@
-import styled from "styled-components";
+import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Header from "../../components/header/Header";
+import TopBar from "../../components/bar/TopBar";
+import FloatingAddButton from "../../components/button/FloatingAddButton";
+import MyLocationPopupList from "./MyLocationPopupList";
+import AllExchangeList from "./AllExchangeList";
 
-// TODO: 레이아웃 확인용 빈 페이지 (담당자가 실제 화면으로 구현)
+const TABS = [
+  { label: "내 현장 팝업", value: "my" },
+  { label: "전체 교환", value: "all" },
+];
+
+// 교환 탭 (피그마 내 현장 팝업 293:9930, 전체 교환 447:21626)
+// - 탭은 쿼리(?tab=all)로 관리 → 교환글 상세에서 뒤로 와도 보던 탭 유지
+// - "+" 버튼은 두 탭 모두, 위치 인증 여부와 상관없이 표시 (전체 교환 피그마에는 빠져 있음)
 export default function ExchangePage() {
+  const navigate = useNavigate();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "all" ? "all" : "my";
+
+  // 탭 전환은 기록을 쌓지 않음 (뒤로가기 시 탭이 아니라 이전 페이지로)
+  const handleTabChange = (tab) =>
+    setSearchParams(tab === "all" ? { tab: "all" } : {}, { replace: true });
+
+  // TODO: 위치 인증 흐름·전역 상태 연결
+  // 지금은 시연용으로 위치 인증 버튼을 누르면 이 화면 안에서만 인증 상태가 됨
+  const [isLocationVerified, setIsLocationVerified] = useState(false);
+  const handleVerifyLocation = () => setIsLocationVerified(true);
+
   return (
     <>
-      <Header variant="main" showLocationButton />
-      <Wrapper>
-        <Title>교환</Title>
-      </Wrapper>
+      <Header
+        variant="main"
+        showLocationButton
+        isLocationVerified={isLocationVerified}
+        onLocationClick={handleVerifyLocation}
+      />
+
+      <TopBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
+
+      {activeTab === "my" ? (
+        <MyLocationPopupList
+          isLocationVerified={isLocationVerified}
+          onVerifyClick={handleVerifyLocation}
+        />
+      ) : (
+        <AllExchangeList />
+      )}
+
+      {/* TODO: 교환글 작성 화면에서 팝업 선택 방식 확정 후 연결 확인 */}
+      <FloatingAddButton
+        aria-label="교환글 작성"
+        onClick={() => navigate("/exchange/write")}
+      />
     </>
   );
 }
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
-  /* 스크롤 확인용 높이 */
-  min-height: 1200px;
-  padding: 20px;
-`;
-
-const Title = styled.h1`
-  font-size: 20px;
-  font-weight: 600;
-`;
