@@ -1,29 +1,32 @@
-import styled from "styled-components";
+import { useSearchParams } from "react-router-dom";
 import Header from "../../components/header/Header";
+import TopBar from "../../components/bar/TopBar";
+import WishPopupList from "./WishPopupList";
+import WishItemList from "./WishItemList";
 
-// TODO: 레이아웃 확인용 빈 페이지 (담당자가 실제 화면으로 구현)
+const TABS = [
+  { label: "찜한 팝업", value: "popup" },
+  { label: "찜한 아이템", value: "item" },
+];
+
+// 찜 탭 (피그마 찜한 팝업 474:23011, 찜한 아이템 474:23025)
+// - 탭은 쿼리(?tab=item)로 관리 → 상세에서 뒤로 와도 보던 탭 유지
 export default function WishPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") === "item" ? "item" : "popup";
+
+  // 탭 전환은 기록을 쌓지 않음 (뒤로가기 시 탭이 아니라 이전 페이지로)
+  const handleTabChange = (tab) =>
+    setSearchParams(tab === "item" ? { tab: "item" } : {}, { replace: true });
+
   return (
     <>
+      {/* TODO: 위치 인증 전역 상태 연결 (지금은 기본 "위치 인증" 표시) */}
       <Header variant="main" showLocationButton />
-      <Wrapper>
-        <Title>찜</Title>
-      </Wrapper>
+
+      <TopBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
+
+      {activeTab === "popup" ? <WishPopupList /> : <WishItemList />}
     </>
   );
 }
-
-const Wrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
-  /* 스크롤 확인용 높이 */
-  min-height: 1200px;
-  padding: 20px;
-`;
-
-const Title = styled.h1`
-  font-size: 20px;
-  font-weight: 600;
-`;
