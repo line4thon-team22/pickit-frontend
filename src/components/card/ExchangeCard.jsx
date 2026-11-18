@@ -4,22 +4,29 @@ import StatusBadge from "../badge/StatusBadge";
 import heartIcon from "../../assets/images/icon/heart-gray.svg";
 import chatIcon from "../../assets/images/icon/chat-gray.svg";
 
+// badgeType·status: StatusBadge에 그대로 넘김 (교환글은 getExchangeBadge 결과 사용)
+// isDimmed: 예약 중·교환 완료 글은 사진을 어둡게 (피그마 교환 보드 293:12409)
 export default function ExchangeCard({
+  image,
   title,
   want,
   likes = 0,
   comments = 0,
+  badgeType = "exchange",
   status = "new",
+  isDimmed = false,
   onClick,
 }) {
   return (
     <Container onClick={onClick}>
-      <ImageArea />
+      <ImageArea $isDimmed={isDimmed}>
+        {image && <img src={image} alt={title} />}
+      </ImageArea>
 
       {/* 텍스트 열과 찜·댓글을 아래선에 맞춤 (피그마 홈 254:2721) */}
       <Body>
         <Content>
-          <StatusBadge type="exchange" status={status} />
+          <StatusBadge type={badgeType} status={status} />
 
           <TextGroup>
             <Title>{title}</Title>
@@ -54,12 +61,30 @@ const Container = styled.div`
 `;
 
 const ImageArea = styled.div`
+  position: relative;
   width: 72px;
   height: 90px;
   flex-shrink: 0;
   border-radius: 12px;
   border: 1px solid #e3e3e3;
+  overflow: hidden;
   background-color: #e8e8e8;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* 어둡게: 피그마 rgba(0, 0, 0, 0.5) */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: ${({ $isDimmed }) => ($isDimmed ? 1 : 0)};
+    pointer-events: none;
+  }
 `;
 
 const Body = styled.div`
