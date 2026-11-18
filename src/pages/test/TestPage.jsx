@@ -25,6 +25,19 @@ import { popups as popupList } from "../../data/popupDummyData";
 
 import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 
+import ExchangeCard from "../../components/card/ExchangeCard";
+import PopupCard from "../../components/card/PopupCard";
+import BlurOverlay from "../../components/area/BlurOverlay";
+import FloatingAddButton from "../../components/button/FloatingAddButton";
+import { exchangePosts } from "../../data/exchangeDummyData";
+import { getExchangeBadge, isTradeClosed } from "../exchange/exchangeUtils";
+
+import PhotoPicker from "../exchange/PhotoPicker";
+import PopupSelect from "../exchange/PopupSelect";
+import { myLocationPopupIds } from "../../data/exchangeDummyData";
+
+import ImageSlider from "../../components/area/ImageSlider";
+
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
   "../../assets/images/**/*.{svg,png,jpg,jpeg}",
@@ -66,6 +79,29 @@ function TestPage() {
 
   // 바텀시트 useState
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // 플로팅 버튼 표시 여부 (고정 위치라 다른 테스트를 가리지 않도록 토글)
+  const [isFabVisible, setIsFabVisible] = useState(false);
+
+  // 사진 선택 예시 (고른 파일을 미리보기 URL로 변환, 테스트라 URL 해제는 생략)
+  const [testPhotos, setTestPhotos] = useState([]);
+  const addTestPhotos = (files) =>
+    setTestPhotos((prev) => [
+      ...prev,
+      ...files.map((file) => ({
+        id: crypto.randomUUID(),
+        url: URL.createObjectURL(file),
+      })),
+    ]);
+
+  // 팝업 선택 예시
+  const [testPopupId, setTestPopupId] = useState(null);
+
+  // 사진 여러 장 예시 (작성 화면에서 3장 고른 상태로 시작)
+  const multiPhotoPost = exchangePosts.find((post) => post.images.length > 2);
+  const [presetPhotos, setPresetPhotos] = useState(() =>
+    multiPhotoPost.images.map((url, index) => ({ id: `preset-${index}`, url })),
+  );
 
   return (
     <div>
@@ -374,8 +410,186 @@ function TestPage() {
           <StatusBadge type="popup" status="completed" size="large" />
         </div>
       </div>
+
+      {/* 교환글 상태 뱃지 small 확인 (Live / New / 방금 전 / 예약 중 / 교환 완료) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          교환글 상태 뱃지 small
+        </p>
+        <div style={{ display: "flex", gap: "12px" }}>
+          {EXCHANGE_BADGES.map(({ type, status }) => (
+            <StatusBadge
+              key={`${type}-${status}`}
+              type={type}
+              status={status}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 교환글 상태 뱃지 large 확인 (교환글 상세용) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          교환글 상태 뱃지 large
+        </p>
+        <p style={{ marginBottom: "8px", fontSize: "12px" }}>
+          방금 전·교환 완료만 피그마 기준, 나머지는 임시
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
+          {EXCHANGE_BADGES.map(({ type, status }) => (
+            <StatusBadge
+              key={`${type}-${status}`}
+              type={type}
+              status={status}
+              size="large"
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* 교환글 카드 확인 (사진, 상태 태그 규칙, 예약 중·교환 완료 사진 어둡게) */}
+      <div style={{ padding: "40px 20px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>
+          교환글 카드 (exchangeDummyData)
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {exchangePosts.slice(0, 5).map((post) => {
+            const badge = getExchangeBadge(post);
+            return (
+              <ExchangeCard
+                key={post.id}
+                image={post.images[0]}
+                title={post.title}
+                want={post.want}
+                likes={post.likes}
+                comments={post.comments}
+                badgeType={badge.type}
+                status={badge.status}
+                isDimmed={isTradeClosed(post)}
+                onClick={() => alert(`교환글 클릭: ${post.id}`)}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 흐린 배경 오버레이 확인 (위치 미인증 내 현장 팝업 예시) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          흐린 배경 오버레이
+        </p>
+        <BlurOverlay
+          title="위치 인증이 필요한 서비스입니다."
+          description="위치 인증하고 팝업 현장에서 굿즈를 교환해 보세요!"
+          buttonText="위치 인증하러 가기"
+          onButtonClick={() => alert("위치 인증하러 가기 클릭!")}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              columnGap: "10px",
+              rowGap: "32px",
+              padding: "24px",
+            }}
+          >
+            {popupList.map((popup) => (
+              <PopupCard key={popup.id} {...popup} />
+            ))}
+          </div>
+        </BlurOverlay>
+      </div>
+
+      {/* 플로팅 "+" 버튼 확인 (화면 오른쪽 아래 고정) */}
+      <div style={{ padding: "40px 20px 120px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>플로팅 버튼</p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          /test는 내비가 없어서 버튼 아래가 비어 보이는 게 정상
+        </p>
+        <CommonButton
+          $width={160}
+          $height={44}
+          $fontSize={14}
+          onClick={() => setIsFabVisible((prev) => !prev)}
+        >
+          {isFabVisible ? "플로팅 버튼 숨기기" : "플로팅 버튼 보기"}
+        </CommonButton>
+        {isFabVisible && (
+          <FloatingAddButton onClick={() => alert("+ 버튼 클릭!")} />
+        )}
+      </div>
+
+      {/* 교환글 작성 사진 선택 확인 (카메라 박스 → 사진 여러 장 가로 나열, 삭제) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          사진 선택 (최대 5장)
+        </p>
+        <PhotoPicker
+          photos={testPhotos}
+          onAdd={addTestPhotos}
+          onRemove={(id) =>
+            setTestPhotos((prev) => prev.filter((photo) => photo.id !== id))
+          }
+        />
+      </div>
+
+      {/* 교환글 작성 팝업 선택 확인 (내 현장 팝업 분홍, 검색, 키보드·목록 동작) */}
+      <div style={{ padding: "40px 24px 240px" }}>
+        <p style={{ marginBottom: "12px", fontWeight: 600 }}>팝업 선택</p>
+        <p style={{ marginBottom: "12px", fontSize: "12px" }}>
+          선택: {testPopupId ?? "없음"}
+        </p>
+        <PopupSelect
+          popups={popupList}
+          highlightIds={myLocationPopupIds.slice(0, 2)}
+          selectedId={testPopupId}
+          onSelect={setTestPopupId}
+        />
+      </div>
+
+      {/* 사진 여러 장 예시 1: 교환글 작성에서 3장 고른 상태 (디자인 없음, 제안용) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          사진 여러 장 - 교환글 작성 (3장 선택된 상태)
+        </p>
+        <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
+          카메라 박스 옆에 같은 크기로 나열, 넘치면 가로 스크롤
+        </p>
+        <PhotoPicker
+          photos={presetPhotos}
+          onAdd={addTestPhotos}
+          onRemove={(id) =>
+            setPresetPhotos((prev) => prev.filter((photo) => photo.id !== id))
+          }
+        />
+      </div>
+
+      {/* 사진 여러 장 예시 2: 교환글 상세 사진 슬라이드 (ImageSlider, 상세에 적용됨) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          사진 여러 장 - 교환글 상세 (좌우로 넘기기)
+        </p>
+        <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
+          폰: 좌우 스와이프 / 컴퓨터: 아래 인디케이터 클릭
+        </p>
+        <ImageSlider images={multiPhotoPost.images} />
+
+        <p style={{ margin: "24px 20px 12px", fontSize: "12px" }}>
+          예약 중·교환 완료일 때 (모든 사진 어둡게)
+        </p>
+        <ImageSlider images={multiPhotoPost.images} isDimmed />
+      </div>
     </div>
   );
 }
+
+// 교환글 상태 뱃지 확인용 (Live / New / 방금 전 / 예약 중 / 교환 완료)
+const EXCHANGE_BADGES = [
+  { type: "exchange", status: "live" },
+  { type: "exchange", status: "new" },
+  { type: "reservation", status: "upcoming" },
+  { type: "reservation", status: "ongoing" },
+  { type: "reservation", status: "completed" },
+];
 
 export default TestPage;

@@ -9,6 +9,9 @@ import MyPage from "./pages/my/MyPage";
 import PopupPage from "./pages/popup/PopupPage";
 import PopupDetailPage from "./pages/popup/PopupDetailPage";
 import ExchangePage from "./pages/exchange/ExchangePage";
+import ExchangeBoardPage from "./pages/exchange/ExchangeBoardPage";
+import ExchangePostDetailPage from "./pages/exchange/ExchangePostDetailPage";
+import ExchangeWritePage from "./pages/exchange/ExchangeWritePage";
 import WishPage from "./pages/wish/WishPage";
 import ChatPage from "./pages/chat/ChatPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
@@ -42,7 +45,27 @@ const router = createBrowserRouter([
         element: <PopupDetailPage />,
         handle: { hideNav: true, hideFooter: true },
       },
-      { path: "exchange", element: <ExchangePage /> },
+      // 교환 목록은 계속 스크롤되므로 푸터 숨김
+      {
+        path: "exchange",
+        element: <ExchangePage />,
+        handle: { hideFooter: true },
+      },
+      {
+        path: "exchange/board/:popupId",
+        element: <ExchangeBoardPage />,
+        handle: { hideFooter: true },
+      },
+      {
+        path: "exchange/post/:postId",
+        element: <ExchangePostDetailPage />,
+        handle: { hideNav: true, hideFooter: true },
+      },
+      {
+        path: "exchange/write",
+        element: <ExchangeWritePage />,
+        handle: { hideNav: true, hideFooter: true },
+      },
       { path: "wish", element: <WishPage /> },
       { path: "chat", element: <ChatPage />, handle: { hideFooter: true } },
       {

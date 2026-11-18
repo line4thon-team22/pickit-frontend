@@ -5,7 +5,7 @@ import Header from "../../components/header/Header";
 import SearchBar from "../../components/input/SearchBar";
 import FilterChip from "../../components/button/FilterChip";
 import PopupPosterCard from "../../components/card/PopupPosterCard";
-import PopupFilterSheet from "./PopupFilterSheet";
+import PopupFilterSheet from "../../components/modal/PopupFilterSheet";
 
 import { popups } from "../../data/popupDummyData";
 import {

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import styled from "styled-components";
-import BottomSheet from "../../components/modal/BottomSheet";
-import CategoryButton from "../../components/button/CategoryButton";
-import CommonButton from "../../components/button/CommonButton";
+import BottomSheet from "./BottomSheet";
+import CategoryButton from "../button/CategoryButton";
+import CommonButton from "../button/CommonButton";
 
 import { POPUP_FILTER_GROUPS } from "../../data/popupDummyData";
-import { isRegionDisabled, toggleFilterValue } from "./popupFilterUtils";
+import {
+  isRegionDisabled,
+  toggleFilterValue,
+} from "../../pages/popup/popupFilterUtils";
 
 // 팝업 필터 바텀시트 (피그마 필터 바텀시트 293:7545)
 // - 열릴 때마다 새로 마운트되어 지금 적용된 필터(appliedFilters)로 시작
