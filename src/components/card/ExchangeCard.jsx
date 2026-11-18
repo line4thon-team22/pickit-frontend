@@ -16,24 +16,29 @@ export default function ExchangeCard({
     <Container onClick={onClick}>
       <ImageArea />
 
-      <Content>
-        <StatusBadge type="exchange" status={status} />
+      {/* 텍스트 열과 찜·댓글을 아래선에 맞춤 (피그마 홈 254:2721) */}
+      <Body>
+        <Content>
+          <StatusBadge type="exchange" status={status} />
 
-        <Title>{title}</Title>
-        <WantText>구함 : {want}</WantText>
-      </Content>
+          <TextGroup>
+            <Title>{title}</Title>
+            <WantText>구함 : {want}</WantText>
+          </TextGroup>
+        </Content>
 
-      <Stats>
-        <Stat>
-          <img src={heartIcon} alt="" />
-          <span>{likes}</span>
-        </Stat>
+        <Stats>
+          <Stat>
+            <img src={heartIcon} alt="" />
+            <span>{likes}</span>
+          </Stat>
 
-        <Stat>
-          <img src={chatIcon} alt="" />
-          <span>{comments}</span>
-        </Stat>
-      </Stats>
+          <Stat>
+            <img src={chatIcon} alt="" />
+            <span>{comments}</span>
+          </Stat>
+        </Stats>
+      </Body>
     </Container>
   );
 }
@@ -57,16 +62,35 @@ const ImageArea = styled.div`
   background-color: #e8e8e8;
 `;
 
+const Body = styled.div`
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 10px;
+`;
+
 const Content = styled.div`
   display: flex;
   flex: 1;
   flex-direction: column;
   align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+`;
+
+const TextGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
   min-width: 0;
 `;
 
 const Title = styled.p`
-  margin: 10px 0 2px;
+  margin: 0;
   color: #141414;
   font-size: 14px;
   font-weight: 500;
@@ -88,14 +112,14 @@ const WantText = styled.p`
   max-width: 100%;
 `;
 
+// 피그마: 폭 65px 양 끝 배치. 숫자가 길어져도 겹치지 않게 최소 폭 + 최소 간격
 const Stats = styled.div`
   display: flex;
   align-items: center;
-  align-self: flex-end;
-  gap: 13px;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 65px;
   flex-shrink: 0;
-  margin-left: auto;
-  margin-bottom: 10px;
 `;
 
 const Stat = styled.div`
