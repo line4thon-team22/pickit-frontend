@@ -36,7 +36,7 @@ import PhotoPicker from "../exchange/PhotoPicker";
 import PopupSelect from "../exchange/PopupSelect";
 import { myLocationPopupIds } from "../../data/exchangeDummyData";
 
-import ImageSliderPreview from "./ImageSliderPreview";
+import ImageSlider from "../../components/area/ImageSlider";
 
 // 에셋 확인용: assets/images 아래 이미지(svg/png/jpg)를 자동으로 모은다
 const assetImages = import.meta.glob(
@@ -564,7 +564,7 @@ function TestPage() {
         />
       </div>
 
-      {/* 사진 여러 장 예시 2: 교환글 상세 사진 슬라이드 (디자인 없음, 제안용) */}
+      {/* 사진 여러 장 예시 2: 교환글 상세 사진 슬라이드 (ImageSlider, 상세에 적용됨) */}
       <div style={{ padding: "40px 0" }}>
         <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
           사진 여러 장 - 교환글 상세 (좌우로 넘기기)
@@ -572,12 +572,12 @@ function TestPage() {
         <p style={{ margin: "0 20px 12px", fontSize: "12px" }}>
           폰: 좌우 스와이프 / 컴퓨터: 아래 인디케이터 클릭
         </p>
-        <ImageSliderPreview images={multiPhotoPost.images} />
+        <ImageSlider images={multiPhotoPost.images} />
 
         <p style={{ margin: "24px 20px 12px", fontSize: "12px" }}>
           예약 중·교환 완료일 때 (모든 사진 어둡게)
         </p>
-        <ImageSliderPreview images={multiPhotoPost.images} isDimmed />
+        <ImageSlider images={multiPhotoPost.images} isDimmed />
       </div>
     </div>
   );

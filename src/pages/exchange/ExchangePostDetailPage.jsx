@@ -4,6 +4,7 @@ import Header from "../../components/header/Header";
 import StatusBadge from "../../components/badge/StatusBadge";
 import ToggleIconButton from "../../components/button/ToggleIconButton";
 import CommonButton from "../../components/button/CommonButton";
+import ImageSlider from "../../components/area/ImageSlider";
 import heartLineIcon from "../../assets/images/icon/heart-white-line-large.svg";
 import heartFilledIcon from "../../assets/images/icon/heart-pink-large.svg";
 import heartGrayIcon from "../../assets/images/icon/heart-gray.svg";
@@ -15,6 +16,7 @@ import { exchangePosts } from "../../data/exchangeDummyData";
 import { getExchangeBadge, isTradeClosed } from "./exchangeUtils";
 
 // 교환글 상세 (피그마 기본 293:12527, 찜 334:14220, 교환 완료 439:21567)
+// - 사진 여러 장: 좌우로 넘기는 슬라이드 (ImageSlider)
 // - 예약 중·교환 완료: 사진 어둡게
 // - 찜 하트: 교환 가능·예약 중은 표시, 교환 완료는 이미 찜한 사람에게만 표시(해제용)
 export default function ExchangePostDetailPage() {
@@ -36,7 +38,7 @@ export default function ExchangePostDetailPage() {
 
   const badge = getExchangeBadge(post);
 
-  // TODO: 디자인 확인 (예약 중 상세 디자인 없음, 교환 완료 + 이미 찜한 경우는 피그마와 다름)
+  // 찜 하트 표시 규칙
   // 예약 중: 예약이 취소되면 다시 교환 가능해지므로 찜 유지
   // 교환 완료: 새로 찜할 이유가 없어 숨김 (피그마 439:21571), 단 이미 찜한 사람은 해제할 수 있게 표시
   // 서버에서 받은 찜 여부 기준이라, 해제해도 하트는 흰 테두리로 남아 다시 누를 수 있음
@@ -49,9 +51,12 @@ export default function ExchangePostDetailPage() {
       <Header variant="back" />
 
       <PhotoArea>
-        <Photo $isDimmed={isTradeClosed(post)}>
-          <img src={post.images[0]} alt={post.title} />
-        </Photo>
+        {/* 사진 여러 장이면 좌우로 넘기기 + 인디케이터 */}
+        <ImageSlider
+          images={post.images}
+          alt={post.title}
+          isDimmed={isTradeClosed(post)}
+        />
 
         {showLikeButton && (
           <HeartPosition>
@@ -139,32 +144,6 @@ export default function ExchangePostDetailPage() {
 
 const PhotoArea = styled.div`
   position: relative;
-`;
-
-const Photo = styled.div`
-  position: relative;
-  width: 100%;
-  height: 480px;
-  border-top: 1px solid #e3e3e3;
-  border-bottom: 1px solid #e3e3e3;
-  overflow: hidden;
-  background-color: #e8e8e8;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* 예약 중·교환 완료: 피그마 rgba(0, 0, 0, 0.5) */
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    opacity: ${({ $isDimmed }) => ($isDimmed ? 1 : 0)};
-    pointer-events: none;
-  }
 `;
 
 // 피그마: 사진 오른쪽 아래에서 24px
