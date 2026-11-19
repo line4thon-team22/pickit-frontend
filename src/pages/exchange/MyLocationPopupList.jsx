@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import PopupCard from "../../components/card/PopupCard";
 import BlurOverlay from "../../components/area/BlurOverlay";
+import LoginBlurOverlay from "../../components/area/LoginBlurOverlay";
 
 import useApi from "../../hooks/useApi";
 import { getPopups } from "../../api/popupApi";
@@ -49,17 +50,7 @@ export default function MyLocationPopupList({
   if (isLoading) return <RequestStateView message="불러오는 중이에요" />;
 
   if (isLoggedOut) {
-    // TODO: 로그인 안내 디자인 확정되면 수정 (지금은 위치 미인증 화면과 같은 모양)
-    return (
-      <BlurOverlay
-        title="로그인이 필요한 서비스입니다."
-        description="로그인하고 PICKIT의 다양한 기능을 이용해 보세요!"
-        buttonText="로그인하러 가기"
-        onButtonClick={() => navigate("/login")}
-      >
-        {blurredBackground}
-      </BlurOverlay>
-    );
+    return <LoginBlurOverlay>{blurredBackground}</LoginBlurOverlay>;
   }
 
   if (error) {
