@@ -2,9 +2,10 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useAuth } from "../../context/useAuth";
 import { useEffect, useState } from "react";
-import { getPosts } from "../../api/postApi";
+import { getPosts, getRecommendedPosts } from "../../api/postApi";
 import { toImageUrl } from "../../api/client";
 import { getPopups } from "../../api/popupApi";
+import { getMyAppointments } from "../../api/appointmentApi";
 
 import Header from "../../components/header/Header";
 import RecommendBanner from "../../components/area/RecommendBanner";
@@ -12,14 +13,14 @@ import AppointmentCard from "../../components/card/AppointmentCard";
 import ExchangeCard from "../../components/card/ExchangeCard";
 import PopupCard from "../../components/card/PopupCard";
 
-import { products, appointment } from "../../data/homeDummyData";
-
 // TODO: 홈 화면 구현 전 빈 페이지
 export default function HomePage() {
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
   const [exchanges, setExchanges] = useState([]);
   const [popups, setPopups] = useState([]);
+  const [appointment, setAppointment] = useState(null);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     let active = true;
@@ -73,6 +74,82 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      return;
+    }
+
+    let active = true;
+
+    const loadAppointment = async () => {
+      try {
+        const data = await getMyAppointments({
+          status: "CONFIRMED",
+          page: 0,
+          size: 1,
+        });
+
+        console.log("📅 나의 약속 API 응답:", data);
+        console.log("📅 약속 목록:", data.content);
+
+        const latest = data.content?.[0];
+
+        if (active && latest) {
+          setAppointment({
+            image: toImageUrl(latest.post.images?.[0]),
+            title: latest.post.haveItemName,
+            want: latest.post.wantItemName,
+            location: latest.meetingPlace,
+            date: latest.post.preferredTime || "시간 미정",
+          });
+        }
+      } catch (error) {
+        console.error("나의 약속 조회 실패:", error);
+      }
+    };
+
+    loadAppointment();
+
+    return () => {
+      active = false;
+    };
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    let active = true;
+
+    const loadRecommendedPosts = async () => {
+      try {
+        const data = await getRecommendedPosts(5);
+
+        console.log("💗 추천 게시글 API 응답:", data);
+
+        if (active) {
+          setProducts(
+            (Array.isArray(data) ? data : []).map((post) => ({
+              id: post.postId,
+              image: toImageUrl(post.images?.[0]),
+              title: post.haveItemName,
+              wanted: post.wantItemName,
+              location: post.preferredLocation,
+              time: post.preferredTime,
+            })),
+          );
+        }
+      } catch (error) {
+        console.error("추천 게시글 조회 실패:", error);
+      }
+    };
+
+    loadRecommendedPosts();
+
+    return () => {
+      active = false;
+    };
+  }, [isLoggedIn]);
+
   return (
     <>
       <Header variant="main" showLocationButton />
@@ -87,7 +164,7 @@ export default function HomePage() {
 
           <RecommendArea>
             <RecommendBanner
-              products={products}
+              products={isLoggedIn ? products : []}
               isLoggedIn={isLoggedIn}
               onLoginClick={() => navigate("/login")}
             />

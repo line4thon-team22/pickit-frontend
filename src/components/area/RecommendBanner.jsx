@@ -13,6 +13,8 @@ export default function RecommendBanner({
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleMove = (index) => {
+    if (products.length === 0) return;
+
     setActiveIndex((index + products.length) % products.length);
   };
 
