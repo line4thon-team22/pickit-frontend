@@ -100,6 +100,14 @@ export const getPostDetail = async (postId) => {
   return toExchangePost(data);
 };
 
+// 찜한 교환글 목록 (로그인 필요, 최근 찜한 순, 교환 완료 글 포함)
+export const getLikedPosts = async () => {
+  const data = await client.get("/api/users/me/likes/posts", {
+    params: { size: PAGE_SIZE },
+  });
+  return data.content.map(toExchangePost);
+};
+
 // 찜하기 / 찜 취소 (로그인 필요)
 // 찜하기 중복(409)은 이미 찜한 상태라 성공으로 처리
 export const likePost = async (postId) => {
