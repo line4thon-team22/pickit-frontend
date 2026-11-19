@@ -7,9 +7,15 @@ import FilterChip from "../../components/button/FilterChip";
 import CommonButton from "../../components/button/CommonButton";
 import PopupPosterCard from "../../components/card/PopupPosterCard";
 import PopupFilterSheet from "../../components/modal/PopupFilterSheet";
+import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 
 import useApi from "../../hooks/useApi";
-import { getPopupFilters, getPopups } from "../../api/popupApi";
+import {
+  getPopupFilters,
+  getPopups,
+  likePopup,
+  unlikePopup,
+} from "../../api/popupApi";
 import { EMPTY_FILTERS, getSelectedChips } from "./popupFilterUtils";
 
 // 팝업 탭 목록 화면 (피그마 기본 팝업 탭 252:2331)
@@ -48,6 +54,7 @@ export default function PopupPage() {
   // 검색어·적용된 필터가 바뀔 때마다 서버에서 다시 받아옴 (정렬도 서버 기준)
   const {
     data: popups,
+    setData: setPopups,
     isLoading,
     error,
     refetch,
@@ -64,6 +71,36 @@ export default function PopupPage() {
   } = useApi(getPopupFilters, []);
 
   const selectedChips = getSelectedChips(appliedFilters, filterGroups ?? []);
+
+  // ===== 찜 =====
+  // 하트는 누르는 즉시 바뀌고(카드 안 ToggleIconButton), 그 다음 서버에 저장
+  // - 성공: 서버가 준 찜 여부·찜 수로 목록 데이터 갱신 (목록 순서는 다시 불러올 때 반영)
+  // - 실패: 하트를 원래대로 되돌림 (카드 key를 바꿔 다시 그려서 isLiked로 초기화)
+  // - 로그인 안 됨(401): 되돌리고 로그인 안내 모달
+  const [revertCounts, setRevertCounts] = useState({});
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLikeChange = async (popupId, nextLiked) => {
+    try {
+      const result = nextLiked
+        ? await likePopup(popupId)
+        : await unlikePopup(popupId);
+
+      setPopups((prev) =>
+        prev.map((popup) =>
+          popup.id === popupId ? { ...popup, ...result } : popup,
+        ),
+      );
+    } catch (err) {
+      setRevertCounts((prev) => ({
+        ...prev,
+        [popupId]: (prev[popupId] ?? 0) + 1,
+      }));
+
+      if (err.status === 401) setIsLoginModalOpen(true);
+      // TODO: 그 밖의 실패 안내(토스트 등) 디자인 확정되면 추가
+    }
+  };
 
   // 목록 영역: 처음 불러오는 중 / 에러 / 결과 없음 / 목록
   // 다시 불러오는 동안에는 이전 목록을 그대로 보여줌 (깜빡임 방지)
@@ -97,9 +134,10 @@ export default function PopupPage() {
       <PopupGrid>
         {popups.map((popup) => (
           <PopupPosterCard
-            key={popup.id}
+            key={`${popup.id}-${revertCounts[popup.id] ?? 0}`}
             {...popup}
             onClick={() => navigate(`/popup/${popup.id}`)}
+            onLikeChange={(nextLiked) => handleLikeChange(popup.id, nextLiked)}
           />
         ))}
       </PopupGrid>
@@ -149,6 +187,12 @@ export default function PopupPage() {
           onClose={() => setIsFilterOpen(false)}
         />
       )}
+
+      {/* 로그인 없이 찜을 눌렀을 때 */}
+      <LoginRequiredModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   );
 }

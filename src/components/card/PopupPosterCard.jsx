@@ -27,7 +27,7 @@ export default function PopupPosterCard({
 
         {/* 하트 클릭이 카드 클릭(상세 이동)으로 이어지지 않도록 전파를 막음 */}
         <HeartPosition onClick={(e) => e.stopPropagation()}>
-          {/* TODO(API): 찜 추가/해제 API 연동 */}
+          {/* 누르면 바로 바뀌고 onLikeChange(다음 찜 여부)로 알림 → 서버 저장·실패 시 되돌리기는 화면에서 처리 */}
           <ToggleIconButton
             defaultActive={isLiked}
             inactiveIcon={heartLineIcon}
