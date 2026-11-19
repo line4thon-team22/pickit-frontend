@@ -8,7 +8,9 @@ import MyLocationPopupList from "./MyLocationPopupList";
 import AllExchangeList from "./AllExchangeList";
 
 import useApi from "../../hooks/useApi";
+import { useAuth } from "../../context/useAuth";
 import { getMyVerifiedPopups } from "../../api/exchangeApi";
+import { getLikedPopups, likePopup, unlikePopup } from "../../api/popupApi";
 
 const TABS = [
   { label: "내 현장 팝업", value: "my" },
@@ -33,10 +35,44 @@ export default function ExchangePage() {
   // TODO(위치 인증): 담당 팀원의 전역 상태로 교체 (지금은 이 화면에 들어올 때 한 번 조회)
   const {
     data: verification,
+    setData: setVerification,
     isLoading: isVerificationLoading,
     error: verificationError,
     refetch: refetchVerification,
   } = useApi(getMyVerifiedPopups, []);
+
+  // ===== 내 현장 팝업 찜 (팝업 탭 포스터 카드와 같은 방식) =====
+  // 찜 여부: 인증 목록 응답에 없어서 찜한 팝업 목록으로 판단 (로그인했을 때만)
+  // TODO(API): 백엔드 수정 후 반영 예정 - 인증 목록에 isLiked 추가되면 이 요청 삭제 (toVerifiedPopupCard에서 연결, 작업 08)
+  const { isLoggedIn } = useAuth();
+  const { data: likedPopups, isLoading: isLikedPopupsLoading } = useApi(
+    () => (isLoggedIn ? getLikedPopups() : Promise.resolve([])),
+    [isLoggedIn],
+  );
+  const likedIds = new Set((likedPopups ?? []).map((popup) => popup.id));
+
+  // 찜하기·해제 결과(isLiked)가 있으면 그 값, 없으면 찜한 팝업 목록 기준
+  const verificationWithLikes = verification && {
+    ...verification,
+    popups: verification.popups.map((popup) => ({
+      ...popup,
+      isLiked: popup.isLiked ?? likedIds.has(popup.id),
+    })),
+  };
+
+  // 저장 후 서버가 준 찜 여부·찜 수로 갱신. 실패하면 에러를 그대로 던짐 (되돌리기·로그인 모달은 목록에서 처리)
+  const handlePopupLikeChange = async (popupId, nextLiked) => {
+    const result = nextLiked
+      ? await likePopup(popupId)
+      : await unlikePopup(popupId);
+
+    setVerification((prev) => ({
+      ...prev,
+      popups: prev.popups.map((popup) =>
+        popup.id === popupId ? { ...popup, ...result } : popup,
+      ),
+    }));
+  };
 
   // 헤더 "위치 인증"·"팝업 확인"(인증 후 이름만 바뀜)·오버레이 버튼 모두 같은 위치 인증 모달(담당 팀원 컴포넌트)
   // 모달을 닫으면 내 현장 팝업을 다시 불러옴 (인증 결과 반영)
@@ -62,11 +98,13 @@ export default function ExchangePage() {
 
       {activeTab === "my" ? (
         <MyLocationPopupList
-          verification={verification}
-          isLoading={isVerificationLoading}
+          verification={verificationWithLikes}
+          // 찜 여부까지 받아온 뒤에 그림 (하트 처음 상태가 잘못 보이지 않게)
+          isLoading={isVerificationLoading || isLikedPopupsLoading}
           error={verificationError}
           onRetry={refetchVerification}
           onVerifyClick={handleVerifyLocation}
+          onLikeChange={handlePopupLikeChange}
         />
       ) : (
         <AllExchangeList />

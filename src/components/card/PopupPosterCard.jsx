@@ -1,17 +1,20 @@
 import styled from "styled-components";
 import StatusBadge from "../badge/StatusBadge";
 import ToggleIconButton from "../button/ToggleIconButton";
+import heartIcon from "../../assets/images/icon/heart-gray.svg";
 import heartLineIcon from "../../assets/images/icon/heart-white-line.svg";
 import heartFilledIcon from "../../assets/images/icon/heart-pink-shadow.svg";
 
 // 팝업 탭·찜 탭용 포스터 카드 (피그마 팝업 탭 293:7496)
 // - 포스터 위 왼쪽 위: 상태 뱃지 / 오른쪽 아래: 찜 하트
+// - 기간 줄 오른쪽 끝: 찜 수 (피그마 없음, 교환 탭 내 현장 팝업 카드 PopupCard와 같은 모양)
 export default function PopupPosterCard({
   image,
   title,
   status,
   location,
   period,
+  likes = 0,
   isLiked = false,
   onClick,
   onLikeChange,
@@ -46,7 +49,15 @@ export default function PopupPosterCard({
 
         <Meta>
           <p>{location}</p>
-          <p>{period}</p>
+
+          <BottomRow>
+            <p>{period}</p>
+
+            <Likes>
+              <img src={heartIcon} alt="" />
+              <span>{likes}</span>
+            </Likes>
+          </BottomRow>
         </Meta>
       </Content>
     </Container>
@@ -130,5 +141,30 @@ const Meta = styled.div`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+`;
+
+// 기간이 길면 기간만 말줄임, 찜 수는 항상 보이게
+const BottomRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+`;
+
+// PopupCard의 찜 수와 같은 스타일
+const Likes = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+
+  color: #a1a1a1;
+  font-size: 10px;
+
+  img {
+    width: 12px;
+    height: 12px;
   }
 `;

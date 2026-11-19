@@ -104,6 +104,15 @@ export const getPopupDetail = async (popupId) => {
   return toPopupDetail(data);
 };
 
+// 팝업 하나의 찜 여부·찜 수 (팝업 상세 하트·찜 수용)
+// 상세 응답에 없어서 팝업 목록(로그인하면 isLiked 포함)에서 찾음. 목록에 없으면 null
+// TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 isLiked·likeCount 추가되면 이 함수 삭제하고 toPopupDetail에서 연결 (작업 08)
+export const getPopupLikeInfo = async (popupId) => {
+  const popups = await getPopups();
+  const popup = popups.find((item) => String(item.id) === String(popupId));
+  return popup ? { isLiked: popup.isLiked, likes: popup.likes } : null;
+};
+
 // 찜한 팝업 목록 (로그인 필요, 페이지 없이 전체)
 // 정렬은 서버 기준: 진행 상태 → 최근 찜한 순
 export const getLikedPopups = async () => {
