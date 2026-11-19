@@ -3,6 +3,9 @@ import styled from "styled-components";
 import Header from "../../components/header/Header";
 import StatusBadge from "../../components/badge/StatusBadge";
 import CommonButton from "../../components/button/CommonButton";
+import ToggleIconButton from "../../components/button/ToggleIconButton";
+import heartLineIcon from "../../assets/images/icon/heart-white-line-large.svg";
+import heartFilledIcon from "../../assets/images/icon/heart-pink-large.svg";
 
 import useApi from "../../hooks/useApi";
 import { getPopupDetail } from "../../api/popupApi";
@@ -65,6 +68,20 @@ export default function PopupDetailPage() {
 
       <Poster>
         <img src={popup.image} alt={popup.title} />
+
+        {/* 찜 하트 (피그마 없음, 교환글 상세와 같은 위치·크기·아이콘) */}
+        <HeartPosition>
+          {/* TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 isLiked 추가되면 처음 상태 반영 + 찜하기·해제 저장 연결 (작업 08 3단계) */}
+          <ToggleIconButton
+            defaultActive={popup.isLiked ?? false}
+            inactiveIcon={heartLineIcon}
+            activeIcon={heartFilledIcon}
+            aria-label="찜하기"
+            $width={48}
+            $height={48}
+            $iconSize={48}
+          />
+        </HeartPosition>
       </Poster>
 
       <InfoSection>
@@ -104,6 +121,7 @@ export default function PopupDetailPage() {
 }
 
 const Poster = styled.div`
+  position: relative;
   width: 100%;
   height: 480px;
   border-top: 1px solid #e3e3e3;
@@ -117,6 +135,14 @@ const Poster = styled.div`
     object-fit: cover;
     object-position: top;
   }
+`;
+
+// 교환글 상세와 같게: 포스터 오른쪽 아래에서 24px
+const HeartPosition = styled.div`
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
 `;
 
 const InfoSection = styled.section`
