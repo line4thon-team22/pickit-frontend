@@ -9,18 +9,57 @@ import locationIcon from "../../assets/images/icon/location-pink.svg";
 import loadingIcon from "../../assets/images/icon/loading.svg";
 import refreshIcon from "../../assets/images/icon/refresh.svg";
 
-import { popups } from "../../data/popupDummyData";
+import { getCurrentLocation } from "../../utils/getCurrentLocation";
+import { previewLocation, verifyLocation } from "../../api/locationApi";
 
-export default function LocationVerifyModal({ isOpen, onClose }) {
+export default function LocationVerifyModal({ isOpen, onClose, onVerified }) {
   const [step, setStep] = useState("request");
+  const [location, setLocation] = useState(null);
+  const [popups, setPopups] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     setStep("loading");
 
-    // TODO: 실제 위치 API 연결 시 교체
-    setTimeout(() => {
+    try {
+      const currentLocation = await getCurrentLocation();
+
+      console.log("📍 GPS 위치:", currentLocation);
+
+      const data = await previewLocation(currentLocation);
+
+      console.log("📦 주변 팝업 미리보기:", data);
+
+      setLocation(currentLocation);
+      setPopups(data.content ?? []);
       setStep("result");
-    }, 2000);
+    } catch (error) {
+      console.error("위치 조회 실패:", error);
+      alert(
+        "위치 정보를 확인하지 못했습니다. 위치 권한과 GPS를 확인해 주세요.",
+      );
+      setStep("request");
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!location || isSaving) return;
+
+    try {
+      setIsSaving(true);
+
+      const data = await verifyLocation(location);
+
+      console.log("✅ 위치 인증 결과:", data);
+
+      onVerified?.(data);
+      onClose();
+    } catch (error) {
+      console.error("위치 인증 실패:", error);
+      alert("위치 인증에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -71,7 +110,7 @@ export default function LocationVerifyModal({ isOpen, onClose }) {
           <LocationHeader>
             <LocationInfo>
               <LocationLabel>현재 내 위치</LocationLabel>
-              <LocationName>서울 용산</LocationName>
+              <LocationName>{popups[0]?.district ?? "현재 위치"}</LocationName>
             </LocationInfo>
 
             <RefreshButton type="button" onClick={handleVerify}>
@@ -83,18 +122,23 @@ export default function LocationVerifyModal({ isOpen, onClose }) {
           <LocationMap />
 
           <PopupList>
-            {popups.map((popup) => (
-              <PopupItem key={popup.id}>{popup.title}</PopupItem>
-            ))}
+            {popups.length > 0 ? (
+              popups.map((popup) => (
+                <PopupItem key={popup.popupId}>{popup.name}</PopupItem>
+              ))
+            ) : (
+              <PopupItem>현재 위치에서 확인 가능한 팝업이 없습니다.</PopupItem>
+            )}
           </PopupList>
 
           <CommonButton
             $width={288}
             $height={48}
             $fontSize={16}
-            onClick={onClose}
+            onClick={handleConfirm}
+            disabled={isSaving}
           >
-            이 장소가 맞아요
+            {isSaving ? "인증 중..." : "이 장소가 맞아요"}
           </CommonButton>
         </ResultContent>
       )}
