@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../../context/useAuth";
+
 import styled from "styled-components";
 import LocationButton from "../button/LocationButton";
 import logo from "../../assets/images/logo/logo.svg";
@@ -39,10 +41,11 @@ export default function Header({
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // TODO: 추후 실제 로그인 상태로 교체
-  const isLoggedIn = true;
+  const { isLoggedIn, isAuthLoading } = useAuth();
 
   const handleMyClick = () => {
+    if (isAuthLoading) return;
+
     if (isLoggedIn) {
       navigate("/my");
     } else {
