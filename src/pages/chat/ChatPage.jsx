@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
+import { getChatRooms } from "../../api/chatApi";
+import { toImageUrl } from "../../api/client";
+
 import Header from "../../components/header/Header";
 import TopBar from "../../components/bar/TopBar";
-import { chats } from "../../data/chatDummyData";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
-
 const CHAT_TABS = [
   { label: "전체", value: "all" },
   { label: "내 약속", value: "appointment" },
@@ -15,11 +16,48 @@ const CHAT_TABS = [
 export default function ChatPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
+  const [chats, setChats] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredChats =
-    activeTab === "all"
-      ? chats
-      : chats.filter((chat) => chat.exchangeStatus === "scheduled");
+  useEffect(() => {
+    let active = true;
+
+    const loadChatRooms = async () => {
+      try {
+        const data = await getChatRooms({
+          page: 0,
+          size: 20,
+        });
+
+        console.log("💬 채팅방 목록:", data);
+
+        if (active) {
+          setChats(Array.isArray(data) ? data : []);
+          setError("");
+        }
+      } catch (err) {
+        console.error("채팅방 목록 조회 실패:", err);
+
+        if (active) {
+          setError("채팅방 목록을 불러오지 못했습니다.");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadChatRooms();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // 내 약속 탭은 약속 API 연결 시 필터링
+  const filteredChats = activeTab === "all" ? chats : [];
 
   return (
     <>
@@ -35,31 +73,58 @@ export default function ChatPage() {
 
       <Container>
         <ChatList>
-          {filteredChats.map((chat) => (
-            <ChatItem
-              key={chat.id}
-              type="button"
-              onClick={() => navigate(`/chat/${chat.id}`)}
-            >
-              <ProfileImage src={chat.profileImage || defaultProfile} alt="" />
+          {isLoading ? (
+            <ListMessage>채팅방을 불러오는 중입니다.</ListMessage>
+          ) : error ? (
+            <ListMessage>{error}</ListMessage>
+          ) : filteredChats.length === 0 ? (
+            <ListMessage>
+              {activeTab === "appointment"
+                ? "내 약속 채팅방이 없습니다."
+                : "아직 채팅방이 없습니다."}
+            </ListMessage>
+          ) : (
+            filteredChats.map((chat) => (
+              <ChatItem
+                key={chat.roomId}
+                type="button"
+                onClick={() => navigate(`/chat/${chat.roomId}`)}
+              >
+                <ProfileImage
+                  src={
+                    toImageUrl(chat.opponent?.profileImageUrl) || defaultProfile
+                  }
+                  alt=""
+                />
 
-              <ChatInfo>
-                <NicknameRow>
-                  <Nickname>{chat.nickname}</Nickname>
+                <ChatInfo>
+                  <NicknameRow>
+                    <Nickname>
+                      {chat.opponent?.username ?? "알 수 없는 사용자"}
+                    </Nickname>
+                  </NicknameRow>
 
-                  {chat.unreadCount > 0 && (
-                    <UnreadDot aria-label="읽지 않은 메시지 있음" />
-                  )}
-                </NicknameRow>
+                  <LastMessage>
+                    {chat.lastMessage ?? "아직 메시지가 없습니다."}
+                  </LastMessage>
+                </ChatInfo>
 
-                <LastMessage>{chat.lastMessage}</LastMessage>
-              </ChatInfo>
-
-              <ChatMeta>
-                <Time>{chat.lastMessageTime}</Time>
-              </ChatMeta>
-            </ChatItem>
-          ))}
+                <ChatMeta>
+                  <Time>
+                    {chat.lastMessageAt
+                      ? new Date(chat.lastMessageAt).toLocaleTimeString(
+                          "ko-KR",
+                          {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          },
+                        )
+                      : ""}
+                  </Time>
+                </ChatMeta>
+              </ChatItem>
+            ))
+          )}
         </ChatList>
       </Container>
     </>
@@ -154,4 +219,11 @@ const Time = styled.span`
   font-size: 12px;
   color: #727272;
   white-space: nowrap;
+`;
+
+const ListMessage = styled.p`
+  padding: 40px 20px;
+  text-align: center;
+  color: #727272;
+  font-size: 14px;
 `;
