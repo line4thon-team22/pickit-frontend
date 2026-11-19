@@ -9,7 +9,7 @@ import popup4 from "../assets/images/popup/popup4.jpg";
 //   TODO(API): 상태를 서버가 내려주는지, 날짜로 계산하는지 확인
 // - location: 카드에 표시하는 지역 문구 (홈 popups와 같은 필드명)
 // - likes: 찜 수 (교환 탭 내 현장 팝업의 PopupCard용, 피그마 293:9930 기준)
-// - region: 필터용 지역 값 (POPUP_FILTER_GROUPS 지역 옵션의 label과 같은 값)
+// - region: 지역 값 (팝업 탭은 API 연동됨, 남은 더미 사용처에서는 표시용 아님)
 // - category: TODO(API): 카테고리가 여러 개일 수 있는지 확인
 // - address, description: 상세 화면용
 // 제목·상태·찜·이미지는 피그마 팝업 탭(293:7496) 기준, 지역·카테고리는 필터 시연용 임의 값
@@ -106,62 +106,5 @@ export const popups = [
     address: "서울 성동구 성수이로 78 트렌드팟 바이 올리브영",
     description:
       "올리브영이 더마 화장품 브랜드와 함께하는 팝업이에요 🧴 피부 진단과 샘플링 이벤트가 준비되어 있어요!",
-  },
-];
-
-// 필터 바텀시트 옵션 (피그마 필터 바텀시트 293:7545 기준)
-// TODO(API): 서버 필터 값(쿼리 형식)이 확정되면 value 맞추기
-// 지역 scope: all(전국) / seoul(서울 세부 지역) / other(서울 전체, 서울 외 지역)
-// - 전국 선택 시: 나머지 지역 칩 선택 해제 + 비활성
-// - 서울 전체 선택 시: scope가 seoul인 칩 선택 해제 + 비활성
-export const POPUP_FILTER_GROUPS = [
-  {
-    key: "status",
-    title: "진행 상태",
-    options: [
-      { value: "upcoming", label: "진행 전" },
-      { value: "ongoing", label: "진행 중" },
-      { value: "completed", label: "진행 완료" },
-    ],
-  },
-  {
-    key: "region",
-    title: "지역",
-    options: [
-      { value: "서울 전체", label: "서울 전체", scope: "other" },
-      { value: "강남/서초", label: "강남/서초", scope: "seoul" },
-      { value: "홍대/신촌", label: "홍대/신촌", scope: "seoul" },
-      { value: "종로/광화문", label: "종로/광화문", scope: "seoul" },
-      { value: "성수", label: "성수", scope: "seoul" },
-      { value: "용산", label: "용산", scope: "seoul" },
-      { value: "여의도", label: "여의도", scope: "seoul" },
-      { value: "잠실", label: "잠실", scope: "seoul" },
-      { value: "경기/인천", label: "경기/인천", scope: "other" },
-      { value: "충청권", label: "충청권", scope: "other" },
-      { value: "경상권", label: "경상권", scope: "other" },
-      { value: "전라권", label: "전라권", scope: "other" },
-      { value: "강원권", label: "강원권", scope: "other" },
-      { value: "제주권", label: "제주권", scope: "other" },
-      { value: "전국", label: "전국", scope: "all" },
-    ],
-  },
-  {
-    key: "category",
-    title: "카테고리",
-    options: [
-      { value: "K_POP", label: "K_POP" },
-      { value: "애니메이션", label: "애니메이션" },
-      { value: "뷰티", label: "뷰티" },
-      { value: "라이프스타일", label: "라이프스타일" },
-      { value: "연예인", label: "연예인" },
-      { value: "영화/드라마", label: "영화/드라마" },
-      { value: "팬시/문구", label: "팬시/문구" },
-      { value: "IT/전자제품", label: "IT/전자제품" },
-      { value: "스포츠", label: "스포츠" },
-      { value: "F&B", label: "F&B" },
-      { value: "패션", label: "패션" },
-      { value: "키즈/반려동물", label: "키즈/반려동물" },
-      { value: "크리에이터", label: "크리에이터" },
-    ],
   },
 ];
