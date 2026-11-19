@@ -8,7 +8,7 @@ import editIcon from "../../assets/images/icon/edit.svg";
 import pickitLogo from "../../assets/images/logo/logo.svg";
 
 const menus = [
-  { label: "관심 설정" },
+  { label: "관심 설정", path: "/my/interest" },
   { label: "교환 내역" },
   { label: "계정 설정" },
   { label: "알림 설정" },
