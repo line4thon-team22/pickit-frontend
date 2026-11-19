@@ -189,6 +189,7 @@ const Nickname = styled.span`
   color: #141414;
 `;
 
+// eslint-disable-next-line no-unused-vars
 const UnreadDot = styled.span`
   width: 6px;
   height: 6px;

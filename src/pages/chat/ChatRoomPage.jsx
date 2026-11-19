@@ -2,56 +2,58 @@ import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 
+import { getChatRoomDetail, getChatMessages } from "../../api/chatApi";
+import { toImageUrl } from "../../api/client";
+import {
+  connectChatSocket,
+  sendChatMessage,
+  disconnectChatSocket,
+} from "../../api/chatSocket";
+
 import Header from "../../components/header/Header";
 import ModalBase from "../../components/modal/ModalBase";
 import CommonButton from "../../components/button/CommonButton";
 
-import { exchangePosts } from "../../data/exchangeDummyData";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
 import cameraIcon from "../../assets/images/icon/camera-gray.svg";
 import starEmpty from "../../assets/images/icon/star-empty.svg";
 import starFilled from "../../assets/images/icon/star.svg";
 
-const INITIAL_MESSAGES = [
-  {
-    id: 1,
-    sender: "other",
-    text: "안녕하세요, 아무 캔뱃지랑 교환하고 싶어요.",
-    time: "오후 7시 48분",
-  },
-  {
-    id: 2,
-    sender: "me",
-    text: "네 좋아요, 언제 바꾸실래요?",
-    time: "오후 7시 48분",
-  },
-  {
-    id: 3,
-    sender: "other",
-    text: "지금 당장 원합니다.",
-    time: "오후 7시 48분",
-  },
-  {
-    id: 4,
-    sender: "me",
-    text: "헐 좋아요. 그럼 약속 확정해 드릴게요!!!!!",
-    time: "오후 7시 48분",
-  },
-];
+// 서버 메시지를 기존 UI 형식으로 변환
+const formatChatMessage = (item, opponentId) => ({
+  id: item.messageId,
+  sender: Number(item.senderId) === Number(opponentId) ? "other" : "me",
+  text:
+    item.messageType === "IMAGE"
+      ? "[사진]"
+      : item.messageType === "APPOINTMENT"
+        ? item.content || "교환 약속이 확정되었습니다."
+        : item.content || "",
+  time: item.createdAt
+    ? new Date(item.createdAt).toLocaleTimeString("ko-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "",
+});
 
 export default function ChatRoomPage() {
   const { chatId } = useParams();
 
-  // TODO(API): 실제 채팅방 조회 API로 교체
-  // demo-{postId}는 프론트 UI 시연용 임시 경로
-  const postId = chatId?.startsWith("demo-")
-    ? Number(chatId.replace("demo-", ""))
-    : 3;
+  const socketRef = useRef(null);
+  const messageAreaRef = useRef(null);
 
-  const post = exchangePosts.find((item) => item.id === postId);
+  // 채팅방 상세 정보
+  const [room, setRoom] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  // 메시지
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
+
+  // 교환 진행 (추후 API 연동)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -59,39 +61,183 @@ export default function ChatRoomPage() {
   const [rating, setRating] = useState(0);
   const [isReviewed, setIsReviewed] = useState(false);
 
-  if (!post) {
-    return (
-      <>
-        <Header variant="back" />
-        <EmptyText>채팅방을 찾을 수 없어요.</EmptyText>
-      </>
-    );
-  }
+  // 1. 채팅방 상세 조회
+  useEffect(() => {
+    let active = true;
 
-  const user = post.author;
+    const loadRoom = async () => {
+      setIsLoading(true);
+      setError("");
+      setRoom(null);
 
+      try {
+        const data = await getChatRoomDetail(chatId);
+
+        if (active) {
+          setRoom(data);
+          console.log("💬 채팅방 상세:", data);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message || "채팅방을 불러오지 못했습니다.");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadRoom();
+
+    return () => {
+      active = false;
+    };
+  }, [chatId]);
+
+  // 2. 이전 메시지 조회 + WebSocket 연결
+  useEffect(() => {
+    if (!room?.roomId) return;
+
+    let active = true;
+    let socket = null;
+
+    const opponentId = room.opponent?.userId;
+
+    const addMessage = (data) => {
+      if (!active) return;
+
+      const formatted = formatChatMessage(data, opponentId);
+
+      setMessages((prev) => {
+        // 서버에서 같은 메시지가 중복 도착하는 경우 방지
+        if (prev.some((item) => item.id === formatted.id)) {
+          return prev;
+        }
+
+        return [...prev, formatted].sort((a, b) => Number(a.id) - Number(b.id));
+      });
+    };
+
+    // 소켓을 먼저 연결하고 메시지 조회
+    // 조회 중 도착한 새 메시지도 ID로 중복 제거
+    socket = connectChatSocket({
+      roomId: room.roomId,
+
+      onMessage: addMessage,
+
+      onConnect: () => {
+        if (active) setIsConnected(true);
+      },
+
+      onDisconnect: () => {
+        if (active) setIsConnected(false);
+      },
+
+      onError: (err) => {
+        if (!active) return;
+
+        console.error("채팅 소켓 오류:", err);
+      },
+    });
+
+    socketRef.current = socket;
+
+    const loadMessages = async () => {
+      try {
+        const data = await getChatMessages(room.roomId, {
+          size: 30,
+        });
+
+        if (!active) return;
+
+        const history = (data.messages ?? []).map((item) =>
+          formatChatMessage(item, opponentId),
+        );
+
+        setMessages((prev) => {
+          const merged = new Map();
+
+          [...history, ...prev].forEach((item) => {
+            merged.set(item.id, item);
+          });
+
+          return [...merged.values()].sort(
+            (a, b) => Number(a.id) - Number(b.id),
+          );
+        });
+
+        console.log("💬 이전 메시지:", data);
+      } catch (err) {
+        if (active) {
+          console.error("메시지 조회 실패:", err);
+        }
+      }
+    };
+
+    loadMessages();
+
+    return () => {
+      active = false;
+
+      if (socketRef.current === socket) {
+        socketRef.current = null;
+      }
+
+      disconnectChatSocket(socket);
+    };
+  }, [room]);
+
+  // 3. 새 메시지가 추가되면 아래로 스크롤
+  useEffect(() => {
+    if (!messageAreaRef.current) return;
+
+    messageAreaRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages]);
+
+  // 기존 UI에 맞게 데이터 변환
+  const post = room?.post
+    ? {
+        id: room.post.postId,
+        title: room.post.haveItemName,
+        want: room.post.wantItemName,
+        images: (room.post.images ?? []).map(toImageUrl),
+        place: room.post.preferredLocation || "채팅으로 협의해요 :)",
+        time: room.post.preferredTime || "채팅으로 협의해요 :)",
+      }
+    : null;
+
+  const user = room?.opponent
+    ? {
+        nickname: room.opponent.username || "알 수 없는 사용자",
+        profileImage: toImageUrl(room.opponent.profileImageUrl),
+        rating: room.opponent.mannerScore,
+      }
+    : null;
+
+  // 4. 실시간 메시지 전송
   const handleSend = (event) => {
     event.preventDefault();
 
     const text = message.trim();
-    if (!text) return;
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: "me",
-        text,
-        time: new Date().toLocaleTimeString("ko-KR", {
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-      },
-    ]);
+    if (!text || !room) return;
 
+    const sent = sendChatMessage(socketRef.current, room.roomId, text);
+
+    if (!sent) {
+      alert("채팅 서버에 연결 중이에요. 잠시 후 다시 시도해 주세요.");
+      return;
+    }
+
+    // 메시지는 서버에서 다시 전달받을 때 화면에 추가
     setMessage("");
   };
 
+  // 아래 교환 기능은 추후 REST API 연동 예정
   const handleConfirm = () => {
     setIsConfirmed(true);
     setIsConfirmOpen(false);
@@ -108,6 +254,19 @@ export default function ChatRoomPage() {
     setIsReviewed(true);
     setIsReviewOpen(false);
   };
+
+  if (isLoading || error || !post || !user) {
+    return (
+      <>
+        <Header variant="back" />
+        <EmptyText>
+          {isLoading
+            ? "채팅방을 불러오는 중이에요."
+            : error || "채팅방을 찾을 수 없어요."}
+        </EmptyText>
+      </>
+    );
+  }
 
   return (
     <>
@@ -151,6 +310,8 @@ export default function ChatRoomPage() {
           {messages.map((item) => (
             <ChatMessage key={item.id} item={item} user={user} />
           ))}
+
+          <div ref={messageAreaRef} />
         </MessageArea>
 
         <InputArea onSubmit={handleSend}>
@@ -168,7 +329,9 @@ export default function ChatRoomPage() {
             <MessageInput
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              placeholder="교환을 제시해주세요"
+              placeholder={
+                isConnected ? "교환을 제시해주세요" : "채팅 서버 연결 중..."
+              }
               aria-label="메시지 입력"
             />
 
@@ -276,6 +439,7 @@ function ChatMessage({ item, user }) {
     checkWidth();
 
     window.addEventListener("resize", checkWidth);
+
     return () => window.removeEventListener("resize", checkWidth);
   }, [item.text]);
 
