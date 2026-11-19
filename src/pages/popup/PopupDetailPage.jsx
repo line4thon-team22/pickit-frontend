@@ -4,22 +4,57 @@ import Header from "../../components/header/Header";
 import StatusBadge from "../../components/badge/StatusBadge";
 import CommonButton from "../../components/button/CommonButton";
 
-import { popups } from "../../data/popupDummyData";
+import useApi from "../../hooks/useApi";
+import { getPopupDetail } from "../../api/popupApi";
 
 // 팝업 상세 화면 (피그마 팝업 상세 257:3150)
 export default function PopupDetailPage() {
   const navigate = useNavigate();
   const { popupId } = useParams();
 
-  // TODO(API): 팝업 상세 조회 API 연동 시 더미 데이터 교체
-  const popup = popups.find((item) => String(item.id) === popupId);
+  const {
+    data: popup,
+    isLoading,
+    error,
+    refetch,
+  } = useApi(() => getPopupDetail(popupId), [popupId]);
 
-  if (!popup) {
+  // TODO: 로딩·에러·없는 팝업 안내 디자인 확정되면 수정
+  if (isLoading) {
     return (
       <>
         <Header variant="back" />
-        {/* TODO: 없는 팝업 안내 디자인 확정되면 수정 */}
+        <EmptyText>불러오는 중이에요</EmptyText>
+      </>
+    );
+  }
+
+  if (error?.status === 404 || (!error && !popup)) {
+    return (
+      <>
+        <Header variant="back" />
         <EmptyText>존재하지 않는 팝업이에요</EmptyText>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header variant="back" />
+        <ErrorArea>
+          <EmptyText>{error.message}</EmptyText>
+          <CommonButton
+            variant="secondary"
+            $width={120}
+            $height={36}
+            $fontSize={14}
+            $borderRadius={10000}
+            onClick={refetch}
+          >
+            다시 시도
+          </CommonButton>
+        </ErrorArea>
       </>
     );
   }
@@ -162,6 +197,17 @@ const ButtonArea = styled.div`
   display: flex;
   justify-content: center;
   padding: 32px 24px;
+`;
+
+const ErrorArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 80px;
+
+  p {
+    padding-bottom: 16px;
+  }
 `;
 
 const EmptyText = styled.p`
