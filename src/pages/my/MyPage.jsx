@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useAuth } from "../../context/useAuth";
+import { toImageUrl } from "../../api/client";
 
 import Header from "../../components/header/Header";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
@@ -20,7 +21,11 @@ const menus = [
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout, isAuthLoading } = useAuth();
+
+  const profileImage = user?.profileImageUrl
+    ? toImageUrl(user.profileImageUrl)
+    : defaultProfile;
 
   const handleLogout = async () => {
     if (!window.confirm("로그아웃하시겠습니까?")) return;
@@ -34,17 +39,24 @@ export default function MyPage() {
       <Header variant="back" />
 
       <ProfileSection>
-        <ProfileImage src={defaultProfile} alt="프로필" />
+        <ProfileImage
+          src={profileImage}
+          alt="프로필"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = defaultProfile;
+          }}
+        />
 
         <ProfileInfo>
           <Nickname>
-            피킷
+            {isAuthLoading ? "불러오는 중..." : (user?.username ?? "사용자")}
             <img src={editIcon} alt="프로필 편집" />
           </Nickname>
 
           <Rating>
             <img src={starIcon} alt="" />
-            <span>4.5</span>
+            <span>{user?.mannerScore ?? "-"}</span>
           </Rating>
         </ProfileInfo>
       </ProfileSection>
@@ -52,7 +64,9 @@ export default function MyPage() {
       <PremiumSection>
         <PremiumButton type="button">
           <PremiumLogo src={pickitLogo} alt="Pickit" />
-          <span>Premium 가입하기</span>
+          <span>
+            {user?.isPremium ? "Premium 이용 중" : "Premium 가입하기"}
+          </span>
         </PremiumButton>
       </PremiumSection>
 
