@@ -1,7 +1,9 @@
-import { Outlet, useMatches } from "react-router-dom";
+import { Outlet, useMatches, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Footer from "../components/footer/Footer";
 import BottomNav from "../components/nav/BottomNav";
+
+import InterestResultModal from "../components/modal/InterestResultModal";
 
 // 모든 페이지를 감싸는 앱 셸
 // 라우트 handle의 hideNav / hideFooter로 하단 내비·푸터를 숨긴다 (router.jsx 참고)
@@ -9,6 +11,19 @@ export default function AppLayout() {
   const matches = useMatches();
   const hideNav = matches.some((match) => match.handle?.hideNav);
   const hideFooter = matches.some((match) => match.handle?.hideFooter);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const showInterestModal =
+    location.pathname === "/" && location.state?.showInterestModal === true;
+
+  const handleCloseInterestModal = () => {
+    navigate("/", {
+      replace: true,
+      state: null,
+    });
+  };
 
   return (
     <Background>
@@ -25,6 +40,11 @@ export default function AppLayout() {
           </NavPosition>
         )}
       </Frame>
+
+      <InterestResultModal
+        isOpen={showInterestModal}
+        onClose={handleCloseInterestModal}
+      />
     </Background>
   );
 }

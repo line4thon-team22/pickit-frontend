@@ -1,0 +1,15 @@
+export const INTEREST_CATEGORIES = [
+  { value: "K_POP", label: "K_POP" },
+  { value: "애니메이션", label: "애니메이션" },
+  { value: "뷰티", label: "뷰티" },
+  { value: "라이프스타일", label: "라이프스타일" },
+  { value: "연예인", label: "연예인" },
+  { value: "영화/드라마", label: "영화/드라마" },
+  { value: "팬시/문구", label: "팬시/문구" },
+  { value: "IT/전자제품", label: "IT/전자제품" },
+  { value: "스포츠", label: "스포츠" },
+  { value: "F&B", label: "F&B" },
+  { value: "패션", label: "패션" },
+  { value: "키즈/반려동물", label: "키즈/반려동물" },
+  { value: "크리에이터", label: "크리에이터" },
+];

@@ -1,20 +1,35 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import CommonInput from "../../components/input/CommonInput";
 import CommonButton from "../../components/button/CommonButton";
 
+import { login } from "../../api/authApi";
+import { useAuth } from "../../context/useAuth";
+
 import logo from "../../assets/images/logo/logo.svg";
 import googleIcon from "../../assets/images/icon/google.svg";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { login: setLogin } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // TODO: 로그인 API 연결
+    try {
+      const data = await login(email, password);
+
+      setLogin(data);
+
+      navigate("/");
+    } catch (error) {
+      alert(error.message || "로그인에 실패했습니다.");
+    }
   };
 
   return (

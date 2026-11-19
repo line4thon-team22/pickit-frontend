@@ -15,6 +15,7 @@ import ExchangeWritePage from "./pages/exchange/ExchangeWritePage";
 import WishPage from "./pages/wish/WishPage";
 import ChatPage from "./pages/chat/ChatPage";
 import ChatRoomPage from "./pages/chat/ChatRoomPage";
+import InterestSettingPage from "./pages/interest/InterestSettingPage";
 
 /*
   새 페이지 추가 방법: AppLayout의 children에 한 줄 추가하면 앱 셸이 자동 적용된다.
@@ -106,6 +107,11 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <MyPage />,
+        handle: { hideNav: true, hideFooter: true },
+      },
+      {
+        path: "interest",
+        element: <InterestSettingPage />,
         handle: { hideNav: true, hideFooter: true },
       },
     ],

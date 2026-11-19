@@ -1,23 +1,28 @@
 import axios from "axios";
 
-// 공통 API 클라이언트 (모든 도메인 API 파일이 이걸 가져다 씀)
-// - 요청: 저장된 Access 토큰이 있으면 Authorization 헤더에 자동으로 붙임
-// - 응답: 서버 공통 형식 { status, message, data } 에서 data만 꺼내서 돌려줌
-// - 에러: { status, message } 형태로 통일 (status 0 = 네트워크 오류·응답 없음)
-
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// TODO(로그인): 토큰 저장 위치·키 이름은 로그인 담당과 맞추기 (지금은 localStorage "accessToken" 가정)
-// TODO(로그인): 토큰 재발급(401 → /api/auth/refresh)은 로그인 연동 시 응답 인터셉터에 추가
+const ACCESS_TOKEN_KEY = "accessToken";
+const REFRESH_TOKEN_KEY = "refreshToken";
+
 export const getAccessToken = () => {
-  try {
-    return localStorage.getItem("accessToken");
-  } catch {
-    return null;
-  }
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
 };
 
-// 서버가 주는 이미지 경로(/images/...)를 전체 주소로 바꿈
+export const getRefreshToken = () => {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+};
+
+export const saveTokens = (accessToken, refreshToken) => {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+};
+
+export const clearTokens = () => {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+};
+
 export const toImageUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
@@ -29,22 +34,71 @@ const client = axios.create({
   timeout: 10000,
 });
 
+// 토큰 갱신 요청 중복 방지
+let refreshPromise = null;
+
 client.interceptors.request.use((config) => {
   const token = getAccessToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
 
-// 에러 문구: 서버 문구 → (응답은 왔는데 문구 없음) 기본 문구 → (응답 없음) 네트워크 문구
 client.interceptors.response.use(
   (response) => response.data.data,
-  (error) =>
-    Promise.reject({
+
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/api/auth/")
+    ) {
+      const refreshToken = getRefreshToken();
+
+      if (refreshToken) {
+        originalRequest._retry = true;
+
+        try {
+          if (!refreshPromise) {
+            refreshPromise = axios
+              .post(`${API_BASE_URL}/api/auth/refresh`, {
+                refreshToken,
+              })
+              .then((response) => {
+                const { accessToken, refreshToken: newRefreshToken } =
+                  response.data.data;
+
+                saveTokens(accessToken, newRefreshToken);
+                return accessToken;
+              })
+              .finally(() => {
+                refreshPromise = null;
+              });
+          }
+
+          const newAccessToken = await refreshPromise;
+
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+          return client(originalRequest);
+        } catch {
+          clearTokens();
+          window.dispatchEvent(new Event("auth:logout"));
+        }
+      }
+    }
+
+    return Promise.reject({
       status: error.response?.status ?? 0,
-      message: error.response
-        ? (error.response.data?.message ?? "요청을 처리하지 못했어요")
-        : "네트워크 연결을 확인해 주세요",
-    }),
+      message: error.response?.data?.message ?? "네트워크 연결을 확인해 주세요",
+    });
+  },
 );
 
 export default client;

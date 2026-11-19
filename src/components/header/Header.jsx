@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../../context/useAuth";
+
 import styled from "styled-components";
 import LocationButton from "../button/LocationButton";
 import logo from "../../assets/images/logo/logo.svg";
@@ -10,6 +12,7 @@ import starIcon from "../../assets/images/icon/star.svg";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
 
 import LoginRequiredModal from "../modal/LoginRequiredModal";
+import LocationVerifyModal from "../modal/LocationVerifyModal";
 
 // variant
 // - "main": 로고 + 알림 + MY (showLocationButton이면 위치 버튼 추가)
@@ -36,11 +39,13 @@ export default function Header({
   const handleBack = onBack ?? (() => navigate(-1));
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
-  // TODO: 추후 실제 로그인 상태로 교체
-  const isLoggedIn = true;
+  const { isLoggedIn, isAuthLoading } = useAuth();
 
   const handleMyClick = () => {
+    if (isAuthLoading) return;
+
     if (isLoggedIn) {
       navigate("/my");
     } else {
@@ -61,7 +66,9 @@ export default function Header({
               <LocationButton
                 isVerified={isLocationVerified}
                 onClick={
-                  isLocationVerified ? onPopupCheckClick : onLocationClick
+                  isLocationVerified
+                    ? onPopupCheckClick
+                    : (onLocationClick ?? (() => setIsLocationModalOpen(true)))
                 }
               />
             )}
@@ -88,6 +95,13 @@ export default function Header({
           isOpen={isLoginModalOpen}
           onClose={() => setIsLoginModalOpen(false)}
         />
+
+        {isLocationModalOpen && (
+          <LocationVerifyModal
+            isOpen={isLocationModalOpen}
+            onClose={() => setIsLocationModalOpen(false)}
+          />
+        )}
       </>
     );
   }
