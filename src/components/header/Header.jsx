@@ -1,6 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/useAuth";
+import {
+  getLocationStatus,
+  getCurrentVerifications,
+} from "../../api/locationApi";
 
 import styled from "styled-components";
 import LocationButton from "../button/LocationButton";
@@ -13,6 +17,7 @@ import defaultProfile from "../../assets/images/profile/default-profile.jpg";
 
 import LoginRequiredModal from "../modal/LoginRequiredModal";
 import LocationVerifyModal from "../modal/LocationVerifyModal";
+import VerifiedPopupModal from "../modal/VerifiedPopupModal";
 
 // variant
 // - "main": 로고 + 알림 + MY (showLocationButton이면 위치 버튼 추가)
@@ -43,6 +48,70 @@ export default function Header({
 
   const { isLoggedIn, isAuthLoading } = useAuth();
 
+  const [locationVerified, setLocationVerified] = useState(false);
+  const [verifiedPopups, setVerifiedPopups] = useState([]);
+  const [isPopupModalOpen, setIsPopupModalOpen] = useState(false);
+  const [isPopupLoading, setIsPopupLoading] = useState(false);
+
+  useEffect(() => {
+    if (variant !== "main" || !showLocationButton || !isLoggedIn) {
+      return;
+    }
+
+    let active = true;
+
+    const loadLocationStatus = async () => {
+      try {
+        const data = await getLocationStatus();
+
+        if (active) {
+          setLocationVerified(data.isLocationVerified);
+        }
+      } catch (error) {
+        console.error("위치 인증 상태 조회 실패:", error);
+      }
+    };
+
+    loadLocationStatus();
+
+    return () => {
+      active = false;
+    };
+  }, [variant, showLocationButton, isLoggedIn]);
+
+  const handleLocationClick = () => {
+    if (isAuthLoading) return;
+
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true);
+      return;
+    }
+
+    setIsLocationModalOpen(true);
+  };
+
+  const handlePopupCheck = async () => {
+    if (isPopupLoading) return;
+
+    setIsPopupLoading(true);
+    setIsPopupModalOpen(true);
+
+    try {
+      const data = await getCurrentVerifications();
+      setVerifiedPopups(data.content ?? []);
+    } catch (error) {
+      console.error("인증된 팝업 조회 실패:", error);
+      alert("인증된 팝업을 불러오지 못했습니다.");
+      setIsPopupModalOpen(false);
+    } finally {
+      setIsPopupLoading(false);
+    }
+  };
+
+  const handleLocationVerified = () => {
+    setLocationVerified(true);
+  };
+
   const handleMyClick = () => {
     if (isAuthLoading) return;
 
@@ -64,11 +133,11 @@ export default function Header({
           <Actions>
             {showLocationButton && (
               <LocationButton
-                isVerified={isLocationVerified}
+                isVerified={isLoggedIn && locationVerified}
                 onClick={
-                  isLocationVerified
-                    ? onPopupCheckClick
-                    : (onLocationClick ?? (() => setIsLocationModalOpen(true)))
+                  isLoggedIn && locationVerified
+                    ? handlePopupCheck
+                    : handleLocationClick
                 }
               />
             )}
@@ -100,8 +169,16 @@ export default function Header({
           <LocationVerifyModal
             isOpen={isLocationModalOpen}
             onClose={() => setIsLocationModalOpen(false)}
+            onVerified={handleLocationVerified}
           />
         )}
+
+        <VerifiedPopupModal
+          isOpen={isPopupModalOpen}
+          onClose={() => setIsPopupModalOpen(false)}
+          popups={verifiedPopups}
+          isLoading={isPopupLoading}
+        />
       </>
     );
   }
