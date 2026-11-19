@@ -3,7 +3,8 @@ import styled from "styled-components";
 import cameraIcon from "../../assets/images/icon/camera.svg";
 import closeIcon from "../../assets/images/icon/close-pink.svg";
 
-// TODO(API): 최대 장수는 이미지 업로드 API(POST /api/posts/images) 제한 확인 후 수정
+// 사진 최대 장수 (임시 5장)
+// TODO(API): 백엔드 수정 후 반영 예정 - 이미지 업로드 최대 장수·용량 받으면 수정 (교환 API 요청 5번)
 export const MAX_PHOTOS = 5;
 
 // 교환글 작성 사진 선택 (피그마 카메라 박스 711:8569)

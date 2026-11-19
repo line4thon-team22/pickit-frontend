@@ -3,35 +3,52 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
 import CommonButton from "../../components/button/CommonButton";
+import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 import PhotoPicker from "./PhotoPicker";
 import PopupSelect from "./PopupSelect";
 
-import { popups } from "../../data/popupDummyData";
-import { myLocationPopupIds } from "../../data/exchangeDummyData";
+import useApi from "../../hooks/useApi";
+import { getPopups } from "../../api/popupApi";
+import {
+  createPost,
+  getMyVerifiedPopups,
+  uploadPostImages,
+} from "../../api/exchangeApi";
+import RequestStateView from "./RequestStateView";
 
 const DESCRIPTION_MAX = 120;
 
 // 교환글 작성 (피그마 기본 664:7169, 팝업 목록 711:8483, 팝업 선택 711:8564)
 // - 교환 보드 "+ 교환"에서 오면 ?popupId로 그 팝업이 선택된 상태로 시작
 // - 필수값: 사진 1장 이상, 상품명, 구하는 제품, 팝업
-// - 폼 값 이름은 작성 API(POST /api/posts) 필드에 맞춤
-//   TODO(API): 목록·상세 더미 필드(title/want/place/time)와 이름이 다름 → API 연동 시 함께 정리
+// - 폼 값 이름은 작성 API(POST /api/posts) 필드에 맞춤 (화면 표시용 이름은 exchangeApi.js에서 변환)
+// - 카테고리는 서버가 팝업 기준으로 채워서 보내지 않음, 현장 밖에서 쓴 글은 서버가 일반 교환으로 분류
 export default function ExchangeWritePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // 넘겨받은 popupId가 실제 팝업일 때만 선택
-  const initialPopupId = popups.some(
-    (popup) => String(popup.id) === searchParams.get("popupId"),
-  )
-    ? Number(searchParams.get("popupId"))
-    : null;
+  // 팝업 선택 목록 (팝업 탭과 같은 전체 목록)
+  const {
+    data: popups,
+    error: popupsError,
+    refetch: refetchPopups,
+  } = useApi(() => getPopups(), []);
 
-  // TODO: 위치 인증 전역 상태 연결 (지금은 인증된 것으로 보고 내 현장 팝업을 목록 맨 위에 표시)
-  const isLocationVerified = true;
+  // 내 현장 팝업: 목록 맨 위에 분홍 글씨로 표시
+  // 로그인 안 했거나 미인증·에러면 하이라이트 없이 전체 목록만
+  // TODO(위치 인증): 담당 팀원의 전역 상태로 교체
+  const { data: verification } = useApi(getMyVerifiedPopups, []);
+  const highlightIds = verification?.popups.map((popup) => popup.id) ?? [];
 
   const [photos, setPhotos] = useState([]);
-  const [popupId, setPopupId] = useState(initialPopupId);
+
+  // 넘겨받은 popupId로 시작, 목록에 실제로 있는 팝업일 때만 선택된 것으로 봄
+  const [popupId, setPopupId] = useState(
+    searchParams.get("popupId") ? Number(searchParams.get("popupId")) : null,
+  );
+  const selectedPopupId = popups?.some((popup) => popup.id === popupId)
+    ? popupId
+    : null;
   const [form, setForm] = useState({
     haveItemName: "",
     wantItemName: "",
@@ -77,18 +94,39 @@ export default function ExchangeWritePage() {
     photos.length > 0 &&
     form.haveItemName.trim() !== "" &&
     form.wantItemName.trim() !== "" &&
-    popupId != null;
+    selectedPopupId != null;
 
-  const handleSubmit = () => {
-    if (!isValid) return;
+  // ===== 작성 완료 =====
+  // 1) 사진 업로드 → 서버 이미지 경로 (배열 순서 = 사진 순서) 2) 글 저장 → 새 글 상세로 이동
+  // - 보내는 동안 버튼 비활성 (두 번 눌러도 한 번만 저장)
+  // - 실패: 입력값 그대로 두고 안내 (401은 로그인 모달)
+  //   사진 업로드 후 글 저장만 실패하면 다시 누를 때 사진을 또 올림 (안 쓰이는 사진이 서버에 남을 수 있음)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-    // TODO(API): 1) POST /api/posts/images (multipart, files) → imageUrls (배열 순서 = 사진 순서)
-    //            2) POST /api/posts { popupId, categoryId, haveItemName, wantItemName,
-    //               preferredLocation, preferredTime, description, imageUrls }
-    //            categoryId는 선택한 팝업 데이터의 categoryId 사용
-    // TODO(API): 위치 인증 미유효 시 403 처리 (403 기준 백엔드 확인 중)
-    alert("작성 완료 (API 연동 전이라 저장되지 않아요)");
-    navigate(`/exchange/board/${popupId}`, { replace: true });
+  const handleSubmit = async () => {
+    if (!isValid || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      const imageUrls = await uploadPostImages(
+        photos.map((photo) => photo.file),
+      );
+      const newPostId = await createPost({
+        ...form,
+        popupId: selectedPopupId,
+        imageUrls,
+      });
+
+      // 뒤로 가기 하면 작성 화면이 아니라 이전 화면으로
+      navigate(`/exchange/post/${newPostId}`, { replace: true });
+    } catch (err) {
+      if (err.status === 401) setIsLoginModalOpen(true);
+      // TODO: 안내 디자인 확정되면 alert 대신 수정
+      else alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -155,13 +193,20 @@ export default function ExchangeWritePage() {
 
           <PopupField>
             <PopupLabel>팝업 선택</PopupLabel>
-            {/* TODO(API): 작성용 팝업 목록 API·내 현장 팝업 구분 방식 백엔드 확인 중 */}
-            <PopupSelect
-              popups={popups}
-              highlightIds={isLocationVerified ? myLocationPopupIds : []}
-              selectedId={popupId}
-              onSelect={setPopupId}
-            />
+            {popupsError ? (
+              <RequestStateView
+                message={popupsError.message}
+                action="retry"
+                onRetry={refetchPopups}
+              />
+            ) : (
+              <PopupSelect
+                popups={popups ?? []}
+                highlightIds={highlightIds}
+                selectedId={selectedPopupId}
+                onSelect={setPopupId}
+              />
+            )}
           </PopupField>
         </FormArea>
 
@@ -187,12 +232,17 @@ export default function ExchangeWritePage() {
         <CommonButton
           $width={354}
           $borderRadius={10000}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           onClick={handleSubmit}
         >
           작성 완료
         </CommonButton>
       </ButtonArea>
+
+      <LoginRequiredModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   );
 }
