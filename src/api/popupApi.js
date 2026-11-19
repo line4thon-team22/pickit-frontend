@@ -40,27 +40,10 @@ const toPopupDetail = (popup) => ({
   categoryName: popup.categoryName,
 });
 
-// 필터 바텀시트 선택지
+// 필터 바텀시트 선택지 → [{ key, title, options: [{ value, label }] }]
 // - 진행 상태: 피그마 순서(진행 전 → 진행 중 → 진행 완료)로 정렬 (서버는 진행 중이 먼저)
-// - 지역 scope: 지역 칩 선택 규칙용 (popupFilterUtils.js 참고). 서버가 주지 않아서 프론트에서 붙임
-//   all(전국) / seoul(서울 세부 지역) / other(서울 전체, 서울 외 지역)
+// - 지역 칩 선택 규칙(전국·서울 전체)은 popupFilterUtils.js에서 value로 판단
 const STATUS_ORDER = ["UPCOMING", "ONGOING", "ENDED"];
-
-const SEOUL_DETAIL_REGIONS = [
-  "GANGNAM_SEOCHO",
-  "HONGDAE_SINCHON",
-  "JONGNO_GWANGHWAMUN",
-  "SEONGSU",
-  "YONGSAN",
-  "YEOUIDO",
-  "JAMSIL",
-];
-
-const getRegionScope = (value) => {
-  if (value === "NATIONWIDE") return "all";
-  if (SEOUL_DETAIL_REGIONS.includes(value)) return "seoul";
-  return "other";
-};
 
 const toFilterGroups = ({ statuses = [], regions = [], categories = [] }) => [
   {
@@ -73,11 +56,7 @@ const toFilterGroups = ({ statuses = [], regions = [], categories = [] }) => [
   {
     key: "region",
     title: "지역",
-    options: regions.map(({ value, label }) => ({
-      value,
-      label,
-      scope: getRegionScope(value),
-    })),
+    options: regions.map(({ value, label }) => ({ value, label })),
   },
   {
     key: "category",
