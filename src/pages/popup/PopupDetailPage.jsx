@@ -1,15 +1,22 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
 import StatusBadge from "../../components/badge/StatusBadge";
 import CommonButton from "../../components/button/CommonButton";
 import ToggleIconButton from "../../components/button/ToggleIconButton";
+import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 import heartLineIcon from "../../assets/images/icon/heart-white-line-large.svg";
 import heartFilledIcon from "../../assets/images/icon/heart-pink-large.svg";
 import heartGrayIcon from "../../assets/images/icon/heart-gray.svg";
 
 import useApi from "../../hooks/useApi";
-import { getPopupDetail } from "../../api/popupApi";
+import {
+  getPopupDetail,
+  getPopupLikeInfo,
+  likePopup,
+  unlikePopup,
+} from "../../api/popupApi";
 
 // 팝업 상세 화면 (피그마 팝업 상세 257:3150)
 export default function PopupDetailPage() {
@@ -22,6 +29,36 @@ export default function PopupDetailPage() {
     error,
     refetch,
   } = useApi(() => getPopupDetail(popupId), [popupId]);
+
+  // ===== 찜 (교환글 상세와 같은 방식) =====
+  // 찜 여부·찜 수: 상세 응답에 없어서 따로 받아옴 (popupApi getPopupLikeInfo 참고)
+  // TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 isLiked·likeCount 추가되면 popup 데이터로 바꾸고 이 요청 삭제 (작업 08)
+  const {
+    data: likeInfo,
+    setData: setLikeInfo,
+    isLoading: isLikeInfoLoading,
+  } = useApi(() => getPopupLikeInfo(popupId), [popupId]);
+
+  // 하트는 누르는 즉시 바뀌고(ToggleIconButton), 그 다음 서버에 저장
+  // - 성공: 서버가 준 찜 여부·찜 수로 갱신 (찜 수 바로 반영)
+  // - 실패: 하트를 원래대로 되돌림 (key를 바꿔 다시 그려서 isLiked로 초기화)
+  // - 로그인 안 됨(401): 되돌리고 로그인 안내 모달
+  const [likeRevertCount, setLikeRevertCount] = useState(0);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLikeChange = async (nextLiked) => {
+    try {
+      const result = nextLiked
+        ? await likePopup(popupId)
+        : await unlikePopup(popupId);
+      setLikeInfo(result);
+    } catch (err) {
+      setLikeRevertCount((count) => count + 1);
+
+      if (err.status === 401) setIsLoginModalOpen(true);
+      // TODO: 그 밖의 실패 안내(토스트 등) 디자인 확정되면 추가
+    }
+  };
 
   // TODO: 로딩·에러·없는 팝업 안내 디자인 확정되면 수정
   if (isLoading) {
@@ -71,18 +108,22 @@ export default function PopupDetailPage() {
         <img src={popup.image} alt={popup.title} />
 
         {/* 찜 하트 (피그마 없음, 교환글 상세와 같은 위치·크기·아이콘) */}
-        <HeartPosition>
-          {/* TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 isLiked 추가되면 처음 상태 반영 + 찜하기·해제 저장 연결 (작업 08 3단계) */}
-          <ToggleIconButton
-            defaultActive={popup.isLiked ?? false}
-            inactiveIcon={heartLineIcon}
-            activeIcon={heartFilledIcon}
-            aria-label="찜하기"
-            $width={48}
-            $height={48}
-            $iconSize={48}
-          />
-        </HeartPosition>
+        {/* 찜 여부를 받아온 뒤에 그림 (처음 상태가 흰 하트로 잘못 보이지 않게) */}
+        {!isLikeInfoLoading && (
+          <HeartPosition>
+            <ToggleIconButton
+              key={likeRevertCount}
+              defaultActive={likeInfo?.isLiked ?? false}
+              inactiveIcon={heartLineIcon}
+              activeIcon={heartFilledIcon}
+              onChange={handleLikeChange}
+              aria-label="찜하기"
+              $width={48}
+              $height={48}
+              $iconSize={48}
+            />
+          </HeartPosition>
+        )}
       </Poster>
 
       <InfoSection>
@@ -90,12 +131,11 @@ export default function PopupDetailPage() {
           <BadgeRow>
             <StatusBadge type="popup" status={popup.status} size="large" />
 
-            {/* 찜 수 (교환글 상세와 같은 위치). 상세 응답에 likeCount가 들어오기 전에는 숨김 */}
-            {/* TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 likeCount 추가되면 toPopupDetail에서 likes로 연결 (작업 08 3단계) */}
-            {popup.likes != null && (
+            {/* 찜 수 (교환글 상세와 같은 위치). 받아오기 전·못 받아오면 숨김 */}
+            {likeInfo?.likes != null && (
               <Likes>
                 <img src={heartGrayIcon} alt="" />
-                <span>{popup.likes}</span>
+                <span>{likeInfo.likes}</span>
               </Likes>
             )}
           </BadgeRow>
@@ -128,6 +168,11 @@ export default function PopupDetailPage() {
           상품 교환하기
         </CommonButton>
       </ButtonArea>
+
+      <LoginRequiredModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   );
 }
