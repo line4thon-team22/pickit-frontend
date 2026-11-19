@@ -12,26 +12,56 @@ import chatGrayIcon from "../../assets/images/icon/chat-gray.svg";
 import starIcon from "../../assets/images/icon/star.svg";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
 
-import { exchangePosts } from "../../data/exchangeDummyData";
+import useApi from "../../hooks/useApi";
+import { getPostDetail } from "../../api/exchangeApi";
 import { getExchangeBadge, isTradeClosed } from "./exchangeUtils";
+import RequestStateView from "./RequestStateView";
 
 // 교환글 상세 (피그마 기본 293:12527, 찜 334:14220, 교환 완료 439:21567)
 // - 사진 여러 장: 좌우로 넘기는 슬라이드 (ImageSlider)
 // - 예약 중·교환 완료: 사진 어둡게
 // - 찜 하트: 교환 가능·예약 중은 표시, 교환 완료는 이미 찜한 사람에게만 표시(해제용)
+// - 상세 조회는 로그인 필요 (토큰 없으면 401 → 로그인 안내)
 export default function ExchangePostDetailPage() {
   const navigate = useNavigate();
   const { postId } = useParams();
 
-  // TODO(API): 교환글 상세 조회 API 연동 시 더미 데이터 교체
-  const post = exchangePosts.find((item) => String(item.id) === postId);
+  const {
+    data: post,
+    isLoading,
+    error,
+    refetch,
+  } = useApi(() => getPostDetail(postId), [postId]);
 
-  if (!post) {
+  // 불러오는 중 / 없는 글 / 로그인 필요 / 그 밖의 에러
+  const renderState = () => {
+    if (isLoading) return <RequestStateView message="불러오는 중이에요" />;
+
+    if (error?.status === 404 || (!error && !post)) {
+      return <RequestStateView message="존재하지 않는 교환글이에요" />;
+    }
+
+    if (error?.status === 401) {
+      return (
+        <RequestStateView message="로그인이 필요한 서비스예요" action="login" />
+      );
+    }
+
+    // TODO(API): 백엔드 수정 후 반영 예정 - 현장 교환글 열람 제한(403) 제거되면 이 경우 없어짐 (교환 API 요청 3번)
+    return (
+      <RequestStateView
+        message={error.message}
+        action="retry"
+        onRetry={refetch}
+      />
+    );
+  };
+
+  if (isLoading || error || !post) {
     return (
       <>
         <Header variant="back" />
-        {/* TODO: 없는 교환글 안내 디자인 확정되면 수정 */}
-        <EmptyText>존재하지 않는 교환글이에요</EmptyText>
+        {renderState()}
       </>
     );
   }
@@ -79,7 +109,8 @@ export default function ExchangePostDetailPage() {
           <BadgeRow>
             <StatusBadge type={badge.type} status={badge.status} size="large" />
 
-            {/* TODO(API): 찜 수는 서버 값 표시 (피그마에서도 찜 토글 시 숫자 그대로) */}
+            {/* 찜 수는 서버 값 그대로 표시 (피그마에서도 찜 토글 시 숫자 그대로) */}
+            {/* 지금은 응답에 없어서 0 (exchangeApi.js toExchangePost 참고) */}
             <Stats>
               <Stat>
                 <img src={heartGrayIcon} alt="" />
@@ -321,12 +352,4 @@ const ButtonArea = styled.div`
   display: flex;
   justify-content: center;
   padding: 32px 24px;
-`;
-
-const EmptyText = styled.p`
-  margin: 0;
-  padding: 80px 24px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.gray[700]};
-  ${({ theme }) => theme.typography.body3};
 `;
