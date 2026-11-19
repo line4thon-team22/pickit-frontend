@@ -35,6 +35,7 @@ export default function ExchangePostDetailPage() {
 
   const {
     data: post,
+    setData: setPost,
     isLoading,
     error,
     refetch,
@@ -44,20 +45,34 @@ export default function ExchangePostDetailPage() {
 
   // ===== 찜 =====
   // 하트는 누르는 즉시 바뀌고(ToggleIconButton), 그 다음 서버에 저장 (팝업 찜과 같은 방식)
-  // - 성공: 화면 데이터는 그대로 둠 (찜 수는 피그마대로 그대로, 하트 표시 규칙은 처음 받은 찜 여부 기준)
+  // - 성공: 상세를 조용히 다시 받아 찜 수·찜 여부를 바로 갱신
+  //   (피그마는 찜해도 숫자 그대로였지만, 새로고침 없이 반영되도록 사용자 요청으로 변경)
+  //   찜·해제 API가 찜 수를 주지 않아서 서버 값을 다시 받음 (다른 사람 찜까지 정확하게)
   // - 실패: 하트를 원래대로 되돌림 (key를 바꿔 다시 그려서 isLiked로 초기화)
   // - 로그인 안 됨(401): 되돌리고 로그인 안내 모달
   const [likeRevertCount, setLikeRevertCount] = useState(0);
+
+  // 교환 완료 글에서 하트를 해제해도 하트가 사라지지 않게 (다시 찜할 수 있도록)
+  const [hasToggledLike, setHasToggledLike] = useState(false);
 
   const handleLikeChange = async (nextLiked) => {
     try {
       if (nextLiked) await likePost(post.id);
       else await unlikePost(post.id);
+      setHasToggledLike(true);
     } catch (err) {
       setLikeRevertCount((count) => count + 1);
 
       if (err.status === 401) setIsLoginModalOpen(true);
       // TODO: 그 밖의 실패 안내(토스트 등) 디자인 확정되면 추가
+      return;
+    }
+
+    // 저장은 성공했으므로, 다시 받기가 실패해도 화면은 그대로 둠
+    try {
+      setPost(await getPostDetail(post.id));
+    } catch {
+      // 무시
     }
   };
 
@@ -119,8 +134,9 @@ export default function ExchangePostDetailPage() {
   // 찜 하트 표시 규칙
   // 예약 중: 예약이 취소되면 다시 교환 가능해지므로 찜 유지
   // 교환 완료: 새로 찜할 이유가 없어 숨김 (피그마 439:21571), 단 이미 찜한 사람은 해제할 수 있게 표시
-  // 서버에서 받은 찜 여부 기준이라, 해제해도 하트는 흰 테두리로 남아 다시 누를 수 있음
-  const showLikeButton = post.tradeStatus !== "completed" || post.isLiked;
+  // 이 화면에서 한 번이라도 찜·해제했으면 계속 표시 → 해제해도 하트는 흰 테두리로 남아 다시 누를 수 있음
+  const showLikeButton =
+    post.tradeStatus !== "completed" || post.isLiked || hasToggledLike;
 
   const { author } = post;
 
@@ -158,7 +174,7 @@ export default function ExchangePostDetailPage() {
           <BadgeRow>
             <StatusBadge type={badge.type} status={badge.status} size="large" />
 
-            {/* 찜 수·채팅 수는 서버 값 그대로 표시 (피그마에서도 찜 토글 시 숫자 그대로) */}
+            {/* 찜 수·채팅 수는 서버 값 그대로 표시 (찜하면 다시 받아서 바로 갱신) */}
             <Stats>
               <Stat>
                 <img src={heartGrayIcon} alt="" />
