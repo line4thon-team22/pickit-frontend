@@ -1,29 +1,89 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useAuth } from "../../context/useAuth";
+import { useEffect, useState } from "react";
+import { getPosts } from "../../api/postApi";
+import { toImageUrl } from "../../api/client";
+import { getPopups } from "../../api/popupApi";
+
 import Header from "../../components/header/Header";
 import RecommendBanner from "../../components/area/RecommendBanner";
 import AppointmentCard from "../../components/card/AppointmentCard";
 import ExchangeCard from "../../components/card/ExchangeCard";
 import PopupCard from "../../components/card/PopupCard";
 
-import {
-  products,
-  exchanges,
-  appointment,
-  popups,
-} from "../../data/homeDummyData";
+import { products, appointment } from "../../data/homeDummyData";
 
 // TODO: 홈 화면 구현 전 빈 페이지
 export default function HomePage() {
   const navigate = useNavigate();
-  const isLoggedIn = false; // 로그인 여부를 나타내는 상태 (예시로 false로 설정)
+  const { user, isLoggedIn } = useAuth();
+  const [exchanges, setExchanges] = useState([]);
+  const [popups, setPopups] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadPosts = async () => {
+      try {
+        const data = await getPosts({
+          sort: "LATEST",
+          page: 0,
+          size: 3,
+        });
+
+        if (active) setExchanges(data.content ?? []);
+      } catch (error) {
+        console.error("교환글 목록 조회 실패:", error);
+      }
+    };
+
+    loadPosts();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadPopups = async () => {
+      try {
+        const data = await getPopups();
+
+        console.log("팝업 목록:", data);
+        console.log(
+          "팝업 ID:",
+          data.map((popup) => popup.id),
+        );
+
+        if (active) {
+          setPopups(data.slice(0, 4));
+        }
+      } catch (error) {
+        console.error("팝업 목록 조회 실패:", error);
+      }
+    };
+
+    loadPopups();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <>
       <Header variant="main" showLocationButton />
 
       <Wrapper>
         <Section>
-          <SectionTitle>피킷 님이 관심 가질 아이템</SectionTitle>
+          <SectionTitle>
+            {isLoggedIn && user?.username
+              ? `${user.username} 님이 관심 가질 아이템`
+              : "피킷 님이 관심 가질 아이템"}
+          </SectionTitle>
 
           <RecommendArea>
             <RecommendBanner
@@ -48,12 +108,14 @@ export default function HomePage() {
           <ExchangeList>
             {exchanges.map((exchange) => (
               <ExchangeCard
-                key={exchange.id}
-                title={exchange.title}
-                want={exchange.want}
-                status={exchange.status}
-                likes={exchange.likes}
-                comments={exchange.comments}
+                key={exchange.postId}
+                image={toImageUrl(exchange.images?.[0])}
+                title={exchange.haveItemName}
+                want={exchange.wantItemName}
+                status="new"
+                likes={exchange.likeCount}
+                comments={exchange.chatCount}
+                onClick={() => navigate(`/posts/${exchange.postId}`)}
               />
             ))}
           </ExchangeList>
@@ -64,7 +126,11 @@ export default function HomePage() {
 
           <PopupList>
             {popups.map((popup) => (
-              <PopupCard key={popup.id} {...popup} />
+              <PopupCard
+                key={popup.id}
+                {...popup}
+                onClick={() => navigate(`/popups/${popup.id}`)}
+              />
             ))}
           </PopupList>
         </Section>
