@@ -35,8 +35,3 @@ export const toExchangeCardProps = (post) => {
     isDimmed: isTradeClosed(post),
   };
 };
-
-// 교환 보드 탭 구분: 현장 교환(live, 방금 전) / 일반 교환(new)
-// TODO(API): 교환 보드 API 연동 시 삭제 (서버 tab 파라미터가 대신함)
-export const isOnSiteExchange = (post) =>
-  post.locationStatus === "live" || post.locationStatus === "justLeft";

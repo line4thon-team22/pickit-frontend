@@ -1,14 +1,16 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import SearchBar from "../../components/input/SearchBar";
 import ExchangeCard from "../../components/card/ExchangeCard";
 
-import { exchangePosts } from "../../data/exchangeDummyData";
+import useApi from "../../hooks/useApi";
+import { getPosts } from "../../api/exchangeApi";
 import { toExchangeCardProps } from "./exchangeUtils";
+import RequestStateView from "./RequestStateView";
 
 // 교환 탭 - 전체 교환 (피그마 447:21626)
-// 전체 교환글을 모아보고 검색하는 화면
+// 전체 교환글을 모아보고 검색하는 화면 (검색 범위: 가진 상품·구하는 상품·설명, 서버 기준)
 export default function AllExchangeList() {
   const navigate = useNavigate();
 
@@ -25,14 +27,55 @@ export default function AllExchangeList() {
     e.currentTarget.blur(); // 폰 키보드 내리기
   };
 
-  // TODO(API): 검색 범위(제목/내용) 확정 후 API 검색으로 교체
-  // TODO: 정렬 기준 확정되면 수정 (지금은 더미 데이터 순서)
-  const filteredPosts = useMemo(() => {
-    const lowerKeyword = keyword.toLowerCase();
-    return exchangePosts.filter((post) =>
-      post.title.toLowerCase().includes(lowerKeyword),
+  // 검색어가 바뀔 때마다 서버에서 다시 받아옴 (정렬도 서버 기준)
+  // TODO(API): 백엔드 수정 후 반영 예정 - tab 생략 시 현장 교환글도 포함되면 코드 수정 없이 전체 표시 (교환 API 요청 3번)
+  const {
+    data: posts,
+    isLoading,
+    error,
+    refetch,
+  } = useApi(() => getPosts({ keyword }), [keyword]);
+
+  // 목록 영역: 처음 불러오는 중 / 에러 / 결과 없음 / 목록
+  // 다시 불러오는 동안에는 이전 목록을 그대로 보여줌 (깜빡임 방지)
+  const renderList = () => {
+    // TODO(API): 백엔드 수정 후 반영 예정 - 비로그인 목록 조회 허용되면 401 에러 없어짐 (교환 API 요청 1번)
+    if (error) {
+      return (
+        <RequestStateView
+          message={error.message}
+          action="retry"
+          onRetry={refetch}
+        />
+      );
+    }
+
+    if (!posts && isLoading) {
+      return <RequestStateView message="불러오는 중이에요" />;
+    }
+
+    if (!posts?.length) {
+      return (
+        <RequestStateView
+          message={
+            keyword ? "검색 결과가 없어요" : "아직 올라온 교환글이 없어요"
+          }
+        />
+      );
+    }
+
+    return (
+      <PostList>
+        {posts.map((post) => (
+          <ExchangeCard
+            key={post.id}
+            {...toExchangeCardProps(post)}
+            onClick={() => navigate(`/exchange/post/${post.id}`)}
+          />
+        ))}
+      </PostList>
     );
-  }, [keyword]);
+  };
 
   return (
     <>
@@ -47,20 +90,7 @@ export default function AllExchangeList() {
         />
       </SearchArea>
 
-      {filteredPosts.length > 0 ? (
-        <PostList>
-          {filteredPosts.map((post) => (
-            <ExchangeCard
-              key={post.id}
-              {...toExchangeCardProps(post)}
-              onClick={() => navigate(`/exchange/post/${post.id}`)}
-            />
-          ))}
-        </PostList>
-      ) : (
-        // TODO: 검색 결과 없음 디자인 확정되면 수정
-        <EmptyText>검색 결과가 없어요</EmptyText>
-      )}
+      {renderList()}
     </>
   );
 }
@@ -76,12 +106,4 @@ const PostList = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 0 20px 24px;
-`;
-
-const EmptyText = styled.p`
-  margin: 0;
-  padding: 80px 24px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.gray[700]};
-  ${({ theme }) => theme.typography.body3};
 `;
