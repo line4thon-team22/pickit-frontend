@@ -36,7 +36,6 @@ client.interceptors.request.use((config) => {
 });
 
 // 에러 문구: 서버 문구 → (응답은 왔는데 문구 없음) 기본 문구 → (응답 없음) 네트워크 문구
-// TODO(API): 백엔드 수정 후 반영 예정 - 401 응답 본문 추가되면 서버 문구 사용 (교환 API 요청 6번)
 client.interceptors.response.use(
   (response) => response.data.data,
   (error) =>

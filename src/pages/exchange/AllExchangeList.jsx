@@ -27,8 +27,7 @@ export default function AllExchangeList() {
     e.currentTarget.blur(); // 폰 키보드 내리기
   };
 
-  // 검색어가 바뀔 때마다 서버에서 다시 받아옴 (정렬도 서버 기준)
-  // TODO(API): 백엔드 수정 후 반영 예정 - tab 생략 시 현장 교환글도 포함되면 코드 수정 없이 전체 표시 (교환 API 요청 3번)
+  // 검색어가 바뀔 때마다 서버에서 다시 받아옴 (정렬도 서버 기준, 현장·일반 교환 모두)
   const {
     data: posts,
     isLoading,
@@ -39,7 +38,6 @@ export default function AllExchangeList() {
   // 목록 영역: 처음 불러오는 중 / 에러 / 결과 없음 / 목록
   // 다시 불러오는 동안에는 이전 목록을 그대로 보여줌 (깜빡임 방지)
   const renderList = () => {
-    // TODO(API): 백엔드 수정 후 반영 예정 - 비로그인 목록 조회 허용되면 401 에러 없어짐 (교환 API 요청 1번)
     if (error) {
       return (
         <RequestStateView

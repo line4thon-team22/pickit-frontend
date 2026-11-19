@@ -21,7 +21,7 @@ import RequestStateView from "./RequestStateView";
 // - 사진 여러 장: 좌우로 넘기는 슬라이드 (ImageSlider)
 // - 예약 중·교환 완료: 사진 어둡게
 // - 찜 하트: 교환 가능·예약 중은 표시, 교환 완료는 이미 찜한 사람에게만 표시(해제용)
-// - 상세 조회는 로그인 필요 (토큰 없으면 401 → 로그인 안내)
+// - 상세 조회는 로그인 없이 가능. 토큰이 만료·잘못되면 401 → 로그인 안내
 export default function ExchangePostDetailPage() {
   const navigate = useNavigate();
   const { postId } = useParams();
@@ -47,7 +47,6 @@ export default function ExchangePostDetailPage() {
       );
     }
 
-    // TODO(API): 백엔드 수정 후 반영 예정 - 현장 교환글 열람 제한(403) 제거되면 이 경우 없어짐 (교환 API 요청 3번)
     return (
       <RequestStateView
         message={error.message}
@@ -109,8 +108,7 @@ export default function ExchangePostDetailPage() {
           <BadgeRow>
             <StatusBadge type={badge.type} status={badge.status} size="large" />
 
-            {/* 찜 수는 서버 값 그대로 표시 (피그마에서도 찜 토글 시 숫자 그대로) */}
-            {/* 지금은 응답에 없어서 0 (exchangeApi.js toExchangePost 참고) */}
+            {/* 찜 수·채팅 수는 서버 값 그대로 표시 (피그마에서도 찜 토글 시 숫자 그대로) */}
             <Stats>
               <Stat>
                 <img src={heartGrayIcon} alt="" />

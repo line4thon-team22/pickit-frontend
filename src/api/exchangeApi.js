@@ -54,9 +54,8 @@ export const toExchangePost = (post) => ({
   images: (post.images ?? []).map(toImageUrl),
   tradeStatus: TRADE_STATUS_MAP[post.status] ?? null,
   locationStatus: LOCATION_STATUS_MAP[post.tag] ?? "new",
-  // TODO(API): 백엔드 수정 후 반영 예정 - 찜 수·채팅 수 필드 연결 (교환 API 요청 2번)
-  likes: 0,
-  comments: 0,
+  likes: post.likeCount ?? 0,
+  comments: post.chatCount ?? 0,
   isLiked: post.isLiked ?? false,
   date: formatDate(post.createdAt),
   place: post.preferredLocation || EMPTY_MEETING_TEXT,
@@ -81,9 +80,8 @@ const toOptionalText = (text) => text?.trim() || null;
 
 // ===== 요청 함수 =====
 
-// 교환글 목록 (전체 교환·교환 보드)
-// - tab: "ONSITE"(현장 교환) / "GENERAL"(일반 교환) / 생략
-// - 서버 기준: tab 생략 시 일반 교환만, ONSITE는 popupId 필수 + 그 팝업 위치 인증한 사람만(403)
+// 교환글 목록 (전체 교환·교환 보드, 로그인 없이 조회 가능)
+// - tab: "ONSITE"(현장 교환, popupId 필수) / "GENERAL"(일반 교환) / 생략(전체)
 export const getPosts = async ({ tab, popupId, keyword } = {}) => {
   const data = await client.get("/api/posts", {
     params: {
@@ -96,7 +94,7 @@ export const getPosts = async ({ tab, popupId, keyword } = {}) => {
   return data.content.map(toExchangePost);
 };
 
-// 교환글 상세 (로그인 필요, 없는 글 404)
+// 교환글 상세 (로그인 없이 조회 가능, 로그인하면 isLiked 포함 / 없는 글 404)
 export const getPostDetail = async (postId) => {
   const data = await client.get(`/api/posts/${postId}`);
   return toExchangePost(data);

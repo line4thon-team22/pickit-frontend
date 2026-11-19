@@ -84,8 +84,6 @@ export default function ExchangeBoardPage() {
   const renderPosts = () => {
     if (isPostsLoading) return <RequestStateView message="불러오는 중이에요" />;
 
-    // TODO(API): 백엔드 수정 후 반영 예정 - 비로그인 목록 조회 허용되면 401 에러 없어짐 (교환 API 요청 1번)
-    // TODO(API): 백엔드 수정 후 반영 예정 - 현장 교환글 열람 제한(403) 제거되면 현장 탭 에러 없어짐 (교환 API 요청 3번)
     if (postsError) {
       return (
         <RequestStateView
