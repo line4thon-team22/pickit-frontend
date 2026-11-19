@@ -86,12 +86,15 @@ export default function MyLocationPopupList({
     );
   }
 
+  // 찜 하트: 팝업 탭 포스터 카드와 같은 위치·아이콘 (PopupCard showLikeButton)
+  // TODO(API): 백엔드 수정 후 반영 예정 - 인증 목록에 isLiked 추가되면 처음 상태 반영 + 찜하기·해제 저장 연결 (작업 08 3단계)
   return (
     <PopupGrid>
       {verification.popups.map((popup) => (
         <PopupCard
           key={popup.id}
           {...popup}
+          showLikeButton
           onClick={() => navigate(`/exchange/board/${popup.id}`)}
         />
       ))}
