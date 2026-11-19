@@ -1,8 +1,13 @@
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "../../components/header/Header";
 import TopBar from "../../components/bar/TopBar";
+import LocationVerifyModal from "../../components/modal/LocationVerifyModal";
 import WishPopupList from "./WishPopupList";
 import WishItemList from "./WishItemList";
+
+import useApi from "../../hooks/useApi";
+import { getMyVerifiedPopups } from "../../api/exchangeApi";
 
 const TABS = [
   { label: "찜한 팝업", value: "popup" },
@@ -19,14 +24,40 @@ export default function WishPage() {
   const handleTabChange = (tab) =>
     setSearchParams(tab === "item" ? { tab: "item" } : {}, { replace: true });
 
+  // ===== 헤더 위치 버튼 (위치 인증 도메인은 다른 프론트 팀원 담당, 교환 탭 ExchangePage와 같은 방식) =====
+  // 인증 여부: 로그아웃·에러면 미인증("위치 인증")으로 표시
+  // TODO(위치 인증): 담당 팀원의 전역 상태로 교체
+  const { data: verification, refetch: refetchVerification } = useApi(
+    getMyVerifiedPopups,
+    [],
+  );
+
+  // "위치 인증"·"팝업 확인"(인증 후 이름만 바뀜) 모두 위치 인증 모달, 닫으면 인증 여부 다시 조회
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const handleVerifyLocation = () => setIsLocationModalOpen(true);
+  const handleLocationModalClose = () => {
+    setIsLocationModalOpen(false);
+    refetchVerification();
+  };
+
   return (
     <>
-      {/* TODO: 위치 인증 전역 상태 연결 (지금은 기본 "위치 인증" 표시) */}
-      <Header variant="main" showLocationButton />
+      <Header
+        variant="main"
+        showLocationButton
+        isLocationVerified={verification?.isVerified ?? false}
+        onLocationClick={handleVerifyLocation}
+        onPopupCheckClick={handleVerifyLocation}
+      />
 
       <TopBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
 
       {activeTab === "popup" ? <WishPopupList /> : <WishItemList />}
+
+      {/* 열 때마다 처음 단계부터 시작하도록 열려 있을 때만 그림 (Header와 같은 방식) */}
+      {isLocationModalOpen && (
+        <LocationVerifyModal isOpen onClose={handleLocationModalClose} />
+      )}
     </>
   );
 }

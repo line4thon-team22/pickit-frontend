@@ -104,6 +104,13 @@ export const getPopupDetail = async (popupId) => {
   return toPopupDetail(data);
 };
 
+// 찜한 팝업 목록 (로그인 필요, 페이지 없이 전체)
+// 정렬은 서버 기준: 진행 상태 → 최근 찜한 순
+export const getLikedPopups = async () => {
+  const data = await client.get("/api/me/liked-popups");
+  return data.map(toPopupCard);
+};
+
 // 찜하기 / 찜 취소 (로그인 필요, 토큰 없으면 error.status 401)
 // 반환: { isLiked, likes } (서버 기준 최신 찜 여부·찜 수)
 export const likePopup = async (popupId) => {

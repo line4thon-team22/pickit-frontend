@@ -28,6 +28,7 @@ import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 import ExchangeCard from "../../components/card/ExchangeCard";
 import PopupCard from "../../components/card/PopupCard";
 import BlurOverlay from "../../components/area/BlurOverlay";
+import LoginBlurOverlay from "../../components/area/LoginBlurOverlay";
 import FloatingAddButton from "../../components/button/FloatingAddButton";
 import { exchangePosts } from "../../data/exchangeDummyData";
 import { getExchangeBadge, isTradeClosed } from "../exchange/exchangeUtils";
@@ -612,6 +613,28 @@ function TestPage() {
             onClick={() => alert("카드 클릭! (찜 안 한 상태)")}
           />
         </div>
+      </div>
+
+      {/* 로그인 안내 흐린 배경 확인 (로그아웃 상태의 내 현장 팝업·찜 탭, 버튼 → /login) */}
+      <div style={{ padding: "40px 0" }}>
+        <p style={{ margin: "0 20px 12px", fontWeight: 600 }}>
+          로그인 안내 흐린 배경 (LoginBlurOverlay)
+        </p>
+        <LoginBlurOverlay>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              columnGap: "10px",
+              rowGap: "32px",
+              padding: "24px",
+            }}
+          >
+            {popupList.slice(0, 4).map((popup) => (
+              <PopupCard key={popup.id} {...popup} />
+            ))}
+          </div>
+        </LoginBlurOverlay>
       </div>
     </div>
   );
