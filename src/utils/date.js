@@ -1,4 +1,4 @@
-// 날짜 표시 형식 함수 모음 (서버 날짜 "YYYY-MM-DD" → 화면 문구)
+// 날짜 표시 형식 함수 모음 (서버 날짜 "YYYY-MM-DD"·"YYYY-MM-DDTHH:mm:ss" → 화면 문구)
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -16,6 +16,15 @@ const formatDay = (date, withYear) => {
   const weekday = `(${WEEKDAYS[date.getDay()]})`;
   if (!withYear) return `${monthDay}${weekday}`;
   return `${String(date.getFullYear()).slice(2)}.${monthDay}${weekday}`;
+};
+
+// 작성일 문구: "2026-11-19T23:51:15.565677" → "2026. 11. 19"
+// 서버 시간이 한국 시간 기준이라 날짜 부분만 잘라서 씀 (시간대 변환 안 함)
+export const formatDate = (dateTime) => {
+  if (!dateTime) return "";
+
+  const [year, month, day] = dateTime.slice(0, 10).split("-");
+  return `${year}. ${month}. ${day}`;
 };
 
 // 기간 문구: ("2026-11-19", "2026-11-21") → "26.11.19(목) - 11.21(토)"
