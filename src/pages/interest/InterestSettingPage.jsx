@@ -1,34 +1,92 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import CategoryButton from "../../components/button/CategoryButton";
 import CommonButton from "../../components/button/CommonButton";
-import { INTEREST_CATEGORIES } from "../../data/interestCategoriesDummyData";
+import {
+  getCategories,
+  getMyInterests,
+  updateMyInterests,
+} from "../../api/interestApi";
 
 export default function InterestSettingPage() {
   const navigate = useNavigate();
+
+  const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [maxCount, setMaxCount] = useState(3);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const categories =
-    INTEREST_CATEGORIES.find((group) => group.key === "category")?.options ??
-    [];
+  useEffect(() => {
+    let active = true;
 
-  const handleCategoryClick = (value) => {
-    setSelectedCategories((prev) =>
-      prev.includes(value)
-        ? prev.filter((item) => item !== value)
-        : [...prev, value],
-    );
+    const loadInterests = async () => {
+      try {
+        const [categoryData, interestData] = await Promise.all([
+          getCategories(),
+          getMyInterests(),
+        ]);
+
+        console.log("전체 카테고리 목록:", categoryData);
+        console.log("내가 저장한 관심사:", interestData);
+
+        if (!active) return;
+
+        setCategories(categoryData);
+        setSelectedCategories(
+          interestData.interests.map((item) => item.categoryId),
+        );
+        setMaxCount(interestData.maxCount);
+      } catch (error) {
+        console.error("관심사 조회 실패:", error);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    loadInterests();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleCategoryClick = (categoryId) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(categoryId)) {
+        return prev.filter((id) => id !== categoryId);
+      }
+
+      if (prev.length >= maxCount) {
+        alert(`관심사는 최대 ${maxCount}개까지 선택할 수 있습니다.`);
+        return prev;
+      }
+
+      return [...prev, categoryId];
+    });
   };
 
-  const handleComplete = () => {
-    // TODO(API): 관심 카테고리 저장
-    console.log("선택한 관심 카테고리:", selectedCategories);
+  const handleComplete = async () => {
+    if (isSaving || isLoading) return;
 
-    navigate("/", {
-      state: { showInterestModal: true },
-    });
+    try {
+      setIsSaving(true);
+
+      const data = await updateMyInterests(selectedCategories);
+
+      console.log("💗 관심사 저장 결과:", data);
+
+      navigate("/", {
+        state: { showInterestModal: true },
+      });
+    } catch (error) {
+      console.error("관심사 저장 실패:", error);
+      alert("관심사 저장에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -52,11 +110,11 @@ export default function InterestSettingPage() {
         <CategoryList>
           {categories.map((category) => (
             <CategoryButton
-              key={category.value}
-              selected={selectedCategories.includes(category.value)}
-              onChange={() => handleCategoryClick(category.value)}
+              key={category.categoryId}
+              selected={selectedCategories.includes(category.categoryId)}
+              onChange={() => handleCategoryClick(category.categoryId)}
             >
-              {category.label}
+              {category.name}
             </CategoryButton>
           ))}
         </CategoryList>
@@ -70,7 +128,7 @@ export default function InterestSettingPage() {
           $borderRadius={10000}
           onClick={handleComplete}
         >
-          선택 완료
+          {isSaving ? "저장 중..." : "선택 완료"}
         </CommonButton>
       </Bottom>
     </Container>
