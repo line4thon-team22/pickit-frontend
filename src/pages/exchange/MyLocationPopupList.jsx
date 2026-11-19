@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import PopupCard from "../../components/card/PopupCard";
 import BlurOverlay from "../../components/area/BlurOverlay";
 import LoginBlurOverlay from "../../components/area/LoginBlurOverlay";
+import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 
 import useApi from "../../hooks/useApi";
 import { getPopups } from "../../api/popupApi";
@@ -16,15 +18,39 @@ const BACKGROUND_POPUP_COUNT = 4;
 // - 위치 인증 X: 팝업 몇 개를 흐리게 깔고 위치 인증 안내를 띄움
 // - 로그인 X(401): 같은 흐린 배경에 로그인 안내 (문구는 LoginRequiredModal과 같게)
 // - 인증 여부·목록(verification)은 ExchangePage가 받아서 넘김 (헤더 위치 버튼과 같이 씀)
-//   verification: { isVerified, popups } (exchangeApi getMyVerifiedPopups)
+//   verification: { isVerified, popups } (exchangeApi getMyVerifiedPopups, popups에 isLiked 포함)
+// - 카드 찜 하트: 팝업 탭 포스터 카드와 같은 위치·아이콘·동작
+//   onLikeChange(popupId, nextLiked): 저장·데이터 갱신은 ExchangePage, 실패하면 에러를 던짐
 export default function MyLocationPopupList({
   verification,
   isLoading,
   error,
   onRetry,
   onVerifyClick,
+  onLikeChange,
 }) {
   const navigate = useNavigate();
+
+  // ===== 찜 (PopupPage와 같은 방식) =====
+  // 하트는 누르는 즉시 바뀌고(카드 안 ToggleIconButton), 그 다음 서버에 저장
+  // - 실패: 하트를 원래대로 되돌림 (카드 key를 바꿔 다시 그려서 isLiked로 초기화)
+  // - 로그인 안 됨(401): 되돌리고 로그인 안내 모달
+  const [revertCounts, setRevertCounts] = useState({});
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const handleLikeChange = async (popupId, nextLiked) => {
+    try {
+      await onLikeChange?.(popupId, nextLiked);
+    } catch (err) {
+      setRevertCounts((prev) => ({
+        ...prev,
+        [popupId]: (prev[popupId] ?? 0) + 1,
+      }));
+
+      if (err.status === 401) setIsLoginModalOpen(true);
+      // TODO: 그 밖의 실패 안내(토스트 등) 디자인 확정되면 추가
+    }
+  };
 
   const isLoggedOut = error?.status === 401;
   const isUnverified = verification?.isVerified === false;
@@ -87,18 +113,25 @@ export default function MyLocationPopupList({
   }
 
   // 찜 하트: 팝업 탭 포스터 카드와 같은 위치·아이콘 (PopupCard showLikeButton)
-  // TODO(API): 백엔드 수정 후 반영 예정 - 인증 목록에 isLiked 추가되면 처음 상태 반영 + 찜하기·해제 저장 연결 (작업 08 3단계)
   return (
-    <PopupGrid>
-      {verification.popups.map((popup) => (
-        <PopupCard
-          key={popup.id}
-          {...popup}
-          showLikeButton
-          onClick={() => navigate(`/exchange/board/${popup.id}`)}
-        />
-      ))}
-    </PopupGrid>
+    <>
+      <PopupGrid>
+        {verification.popups.map((popup) => (
+          <PopupCard
+            key={`${popup.id}-${revertCounts[popup.id] ?? 0}`}
+            {...popup}
+            showLikeButton
+            onClick={() => navigate(`/exchange/board/${popup.id}`)}
+            onLikeChange={(nextLiked) => handleLikeChange(popup.id, nextLiked)}
+          />
+        ))}
+      </PopupGrid>
+
+      <LoginRequiredModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+    </>
   );
 }
 
