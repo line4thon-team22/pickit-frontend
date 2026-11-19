@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/header/Header";
@@ -5,6 +6,7 @@ import StatusBadge from "../../components/badge/StatusBadge";
 import ToggleIconButton from "../../components/button/ToggleIconButton";
 import CommonButton from "../../components/button/CommonButton";
 import ImageSlider from "../../components/area/ImageSlider";
+import LoginRequiredModal from "../../components/modal/LoginRequiredModal";
 import heartLineIcon from "../../assets/images/icon/heart-white-line-large.svg";
 import heartFilledIcon from "../../assets/images/icon/heart-pink-large.svg";
 import heartGrayIcon from "../../assets/images/icon/heart-gray.svg";
@@ -12,26 +14,117 @@ import chatGrayIcon from "../../assets/images/icon/chat-gray.svg";
 import starIcon from "../../assets/images/icon/star.svg";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
 
-import { exchangePosts } from "../../data/exchangeDummyData";
+import useApi from "../../hooks/useApi";
+import {
+  createChatRoom,
+  getPostDetail,
+  likePost,
+  unlikePost,
+} from "../../api/exchangeApi";
 import { getExchangeBadge, isTradeClosed } from "./exchangeUtils";
+import RequestStateView from "./RequestStateView";
 
 // 교환글 상세 (피그마 기본 293:12527, 찜 334:14220, 교환 완료 439:21567)
 // - 사진 여러 장: 좌우로 넘기는 슬라이드 (ImageSlider)
 // - 예약 중·교환 완료: 사진 어둡게
 // - 찜 하트: 교환 가능·예약 중은 표시, 교환 완료는 이미 찜한 사람에게만 표시(해제용)
+// - 상세 조회는 로그인 없이 가능. 토큰이 만료·잘못되면 401 → 로그인 안내
 export default function ExchangePostDetailPage() {
   const navigate = useNavigate();
   const { postId } = useParams();
 
-  // TODO(API): 교환글 상세 조회 API 연동 시 더미 데이터 교체
-  const post = exchangePosts.find((item) => String(item.id) === postId);
+  const {
+    data: post,
+    setData: setPost,
+    isLoading,
+    error,
+    refetch,
+  } = useApi(() => getPostDetail(postId), [postId]);
 
-  if (!post) {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // ===== 찜 =====
+  // 하트는 누르는 즉시 바뀌고(ToggleIconButton), 그 다음 서버에 저장 (팝업 찜과 같은 방식)
+  // - 성공: 상세를 조용히 다시 받아 찜 수·찜 여부를 바로 갱신
+  //   (피그마는 찜해도 숫자 그대로였지만, 새로고침 없이 반영되도록 사용자 요청으로 변경)
+  //   찜·해제 API가 찜 수를 주지 않아서 서버 값을 다시 받음 (다른 사람 찜까지 정확하게)
+  // - 실패: 하트를 원래대로 되돌림 (key를 바꿔 다시 그려서 isLiked로 초기화)
+  // - 로그인 안 됨(401): 되돌리고 로그인 안내 모달
+  const [likeRevertCount, setLikeRevertCount] = useState(0);
+
+  // 교환 완료 글에서 하트를 해제해도 하트가 사라지지 않게 (다시 찜할 수 있도록)
+  const [hasToggledLike, setHasToggledLike] = useState(false);
+
+  const handleLikeChange = async (nextLiked) => {
+    try {
+      if (nextLiked) await likePost(post.id);
+      else await unlikePost(post.id);
+      setHasToggledLike(true);
+    } catch (err) {
+      setLikeRevertCount((count) => count + 1);
+
+      if (err.status === 401) setIsLoginModalOpen(true);
+      // TODO: 그 밖의 실패 안내(토스트 등) 디자인 확정되면 추가
+      return;
+    }
+
+    // 저장은 성공했으므로, 다시 받기가 실패해도 화면은 그대로 둠
+    try {
+      setPost(await getPostDetail(post.id));
+    } catch {
+      // 무시
+    }
+  };
+
+  // ===== 채팅하기 =====
+  // 채팅방 생성(이미 있으면 기존 방) → 그 채팅방으로 이동
+  // 요청 중에는 버튼 비활성 (두 번 눌러도 한 번만 요청)
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const handleChatClick = async () => {
+    setIsChatLoading(true);
+    try {
+      const roomId = await createChatRoom(post.id);
+      // TODO: 채팅 라우트 chatId = roomId로 채팅 담당과 맞추기 (ChatRoomPage가 아직 chatId를 읽지 않음)
+      navigate(`/chat/${roomId}`);
+    } catch (err) {
+      if (err.status === 401) setIsLoginModalOpen(true);
+      // 본인 글(400) 등은 서버 문구로 안내
+      // TODO: 안내 디자인 확정되면 alert 대신 수정
+      else alert(err.message);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  // 불러오는 중 / 없는 글 / 로그인 필요 / 그 밖의 에러
+  const renderState = () => {
+    if (isLoading) return <RequestStateView message="불러오는 중이에요" />;
+
+    if (error?.status === 404 || (!error && !post)) {
+      return <RequestStateView message="존재하지 않는 교환글이에요" />;
+    }
+
+    if (error?.status === 401) {
+      return (
+        <RequestStateView message="로그인이 필요한 서비스예요" action="login" />
+      );
+    }
+
+    return (
+      <RequestStateView
+        message={error.message}
+        action="retry"
+        onRetry={refetch}
+      />
+    );
+  };
+
+  if (isLoading || error || !post) {
     return (
       <>
         <Header variant="back" />
-        {/* TODO: 없는 교환글 안내 디자인 확정되면 수정 */}
-        <EmptyText>존재하지 않는 교환글이에요</EmptyText>
+        {renderState()}
       </>
     );
   }
@@ -41,8 +134,9 @@ export default function ExchangePostDetailPage() {
   // 찜 하트 표시 규칙
   // 예약 중: 예약이 취소되면 다시 교환 가능해지므로 찜 유지
   // 교환 완료: 새로 찜할 이유가 없어 숨김 (피그마 439:21571), 단 이미 찜한 사람은 해제할 수 있게 표시
-  // 서버에서 받은 찜 여부 기준이라, 해제해도 하트는 흰 테두리로 남아 다시 누를 수 있음
-  const showLikeButton = post.tradeStatus !== "completed" || post.isLiked;
+  // 이 화면에서 한 번이라도 찜·해제했으면 계속 표시 → 해제해도 하트는 흰 테두리로 남아 다시 누를 수 있음
+  const showLikeButton =
+    post.tradeStatus !== "completed" || post.isLiked || hasToggledLike;
 
   const { author } = post;
 
@@ -60,9 +154,10 @@ export default function ExchangePostDetailPage() {
 
         {showLikeButton && (
           <HeartPosition>
-            {/* TODO(API): 찜 추가/해제 API 연동 */}
             <ToggleIconButton
+              key={likeRevertCount}
               defaultActive={post.isLiked}
+              onChange={handleLikeChange}
               inactiveIcon={heartLineIcon}
               activeIcon={heartFilledIcon}
               aria-label="찜하기"
@@ -79,7 +174,7 @@ export default function ExchangePostDetailPage() {
           <BadgeRow>
             <StatusBadge type={badge.type} status={badge.status} size="large" />
 
-            {/* TODO(API): 찜 수는 서버 값 표시 (피그마에서도 찜 토글 시 숫자 그대로) */}
+            {/* 찜 수·채팅 수는 서버 값 그대로 표시 (찜하면 다시 받아서 바로 갱신) */}
             <Stats>
               <Stat>
                 <img src={heartGrayIcon} alt="" />
@@ -129,15 +224,20 @@ export default function ExchangePostDetailPage() {
       </AuthorSection>
 
       <ButtonArea>
-        {/* TODO(API): 채팅방 생성 API 연동 후 해당 채팅방으로 이동 */}
         <CommonButton
           $width={354}
           $borderRadius={10000}
-          onClick={() => navigate("/chat")}
+          disabled={isChatLoading}
+          onClick={handleChatClick}
         >
           채팅하기
         </CommonButton>
       </ButtonArea>
+
+      <LoginRequiredModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   );
 }
@@ -321,12 +421,4 @@ const ButtonArea = styled.div`
   display: flex;
   justify-content: center;
   padding: 32px 24px;
-`;
-
-const EmptyText = styled.p`
-  margin: 0;
-  padding: 80px 24px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.gray[700]};
-  ${({ theme }) => theme.typography.body3};
 `;

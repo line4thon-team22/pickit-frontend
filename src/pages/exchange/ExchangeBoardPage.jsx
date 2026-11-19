@@ -5,18 +5,22 @@ import TopBar from "../../components/bar/TopBar";
 import ExchangeCard from "../../components/card/ExchangeCard";
 import plusIcon from "../../assets/images/icon/plus-white-small.svg";
 
-import { popups } from "../../data/popupDummyData";
-import { exchangePosts } from "../../data/exchangeDummyData";
-import { isOnSiteExchange, toExchangeCardProps } from "./exchangeUtils";
+import useApi from "../../hooks/useApi";
+import { getPopupDetail } from "../../api/popupApi";
+import { getPosts } from "../../api/exchangeApi";
+import { toExchangeCardProps } from "./exchangeUtils";
+import RequestStateView from "./RequestStateView";
 
+// 화면 탭 → 서버 tab 파라미터
 const TABS = [
-  { label: "현장 교환", value: "onsite" },
-  { label: "일반 교환", value: "general" },
+  { label: "현장 교환", value: "onsite", apiTab: "ONSITE" },
+  { label: "일반 교환", value: "general", apiTab: "GENERAL" },
 ];
 
 // 팝업별 교환 보드 (피그마 현장 교환 293:12390, 일반 교환 669:7709)
 // - 진입: 교환 탭 내 현장 팝업 클릭 / 팝업 상세 "상품 교환하기"
 // - 탭은 쿼리(?tab=general)로 관리 → 교환글 상세에서 뒤로 와도 보던 탭 유지
+// - 팝업 정보와 글 목록은 따로 불러오고 로딩·에러도 따로 처리
 export default function ExchangeBoardPage() {
   const navigate = useNavigate();
   const { popupId } = useParams();
@@ -31,25 +35,81 @@ export default function ExchangeBoardPage() {
       replace: true,
     });
 
-  // TODO(API): 팝업 상세 조회 API 연동 시 더미 데이터 교체
-  const popup = popups.find((item) => String(item.id) === popupId);
+  const {
+    data: popup,
+    isLoading: isPopupLoading,
+    error: popupError,
+    refetch: refetchPopup,
+  } = useApi(() => getPopupDetail(popupId), [popupId]);
 
-  if (!popup) {
+  // 탭 구분은 서버 기준 (tab=ONSITE / GENERAL)
+  const apiTab = TABS.find((tab) => tab.value === activeTab).apiTab;
+  const {
+    data: posts,
+    isLoading: isPostsLoading,
+    error: postsError,
+    refetch: refetchPosts,
+  } = useApi(
+    () => getPosts({ popupId, tab: apiTab }),
+    [popupId, apiTab],
+  );
+
+  // 팝업 정보: 불러오는 중 / 없는 팝업 / 에러 → 화면 전체에 표시
+  const renderPopupState = () => {
+    if (isPopupLoading) return <RequestStateView message="불러오는 중이에요" />;
+
+    if (popupError?.status === 404 || (!popupError && !popup)) {
+      return <RequestStateView message="존재하지 않는 팝업이에요" />;
+    }
+
+    return (
+      <RequestStateView
+        message={popupError.message}
+        action="retry"
+        onRetry={refetchPopup}
+      />
+    );
+  };
+
+  if (isPopupLoading || popupError || !popup) {
     return (
       <>
         <Header variant="back" />
-        {/* TODO: 없는 팝업 안내 디자인 확정되면 수정 */}
-        <EmptyText>존재하지 않는 팝업이에요</EmptyText>
+        {renderPopupState()}
       </>
     );
   }
 
-  // TODO(API): 팝업별 교환글 목록 조회 API 연동 시 교체 (탭 구분도 서버 필터로)
-  const posts = exchangePosts.filter(
-    (post) =>
-      post.popupId === popup.id &&
-      isOnSiteExchange(post) === (activeTab === "onsite"),
-  );
+  // 글 목록: 탭을 바꾸면 이전 탭 목록 대신 불러오는 중 표시 (다른 탭 글이 섞여 보이지 않게)
+  const renderPosts = () => {
+    if (isPostsLoading) return <RequestStateView message="불러오는 중이에요" />;
+
+    if (postsError) {
+      return (
+        <RequestStateView
+          message={postsError.message}
+          action="retry"
+          onRetry={refetchPosts}
+        />
+      );
+    }
+
+    if (!posts?.length) {
+      return <RequestStateView message="아직 올라온 교환글이 없어요" />;
+    }
+
+    return (
+      <PostList>
+        {posts.map((post) => (
+          <ExchangeCard
+            key={post.id}
+            {...toExchangeCardProps(post)}
+            onClick={() => navigate(`/exchange/post/${post.id}`)}
+          />
+        ))}
+      </PostList>
+    );
+  };
 
   return (
     <>
@@ -92,20 +152,7 @@ export default function ExchangeBoardPage() {
           onChange={handleTabChange}
         />
 
-        {posts.length > 0 ? (
-          <PostList>
-            {posts.map((post) => (
-              <ExchangeCard
-                key={post.id}
-                {...toExchangeCardProps(post)}
-                onClick={() => navigate(`/exchange/post/${post.id}`)}
-              />
-            ))}
-          </PostList>
-        ) : (
-          // TODO: 교환글 없음 디자인 확정되면 수정
-          <EmptyText>아직 올라온 교환글이 없어요</EmptyText>
-        )}
+        {renderPosts()}
       </BoardSection>
     </>
   );
@@ -225,12 +272,4 @@ const PostList = styled.div`
   flex-direction: column;
   gap: 12px;
   padding: 0 20px 24px;
-`;
-
-const EmptyText = styled.p`
-  margin: 0;
-  padding: 80px 24px;
-  text-align: center;
-  color: ${({ theme }) => theme.colors.gray[700]};
-  ${({ theme }) => theme.typography.body3};
 `;
