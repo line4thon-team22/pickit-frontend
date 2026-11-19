@@ -4,14 +4,14 @@ import styled from "styled-components";
 
 import CategoryButton from "../../components/button/CategoryButton";
 import CommonButton from "../../components/button/CommonButton";
-import { POPUP_FILTER_GROUPS } from "../../data/popupDummyData";
+import { INTEREST_CATEGORIES } from "../../data/interestCategoriesDummyData";
 
 export default function InterestSettingPage() {
   const navigate = useNavigate();
   const [selectedCategories, setSelectedCategories] = useState([]);
 
   const categories =
-    POPUP_FILTER_GROUPS.find((group) => group.key === "category")?.options ??
+    INTEREST_CATEGORIES.find((group) => group.key === "category")?.options ??
     [];
 
   const handleCategoryClick = (value) => {
