@@ -6,6 +6,7 @@ import CommonButton from "../../components/button/CommonButton";
 import ToggleIconButton from "../../components/button/ToggleIconButton";
 import heartLineIcon from "../../assets/images/icon/heart-white-line-large.svg";
 import heartFilledIcon from "../../assets/images/icon/heart-pink-large.svg";
+import heartGrayIcon from "../../assets/images/icon/heart-gray.svg";
 
 import useApi from "../../hooks/useApi";
 import { getPopupDetail } from "../../api/popupApi";
@@ -86,7 +87,18 @@ export default function PopupDetailPage() {
 
       <InfoSection>
         <TitleArea>
-          <StatusBadge type="popup" status={popup.status} size="large" />
+          <BadgeRow>
+            <StatusBadge type="popup" status={popup.status} size="large" />
+
+            {/* 찜 수 (교환글 상세와 같은 위치). 상세 응답에 likeCount가 들어오기 전에는 숨김 */}
+            {/* TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 likeCount 추가되면 toPopupDetail에서 likes로 연결 (작업 08 3단계) */}
+            {popup.likes != null && (
+              <Likes>
+                <img src={heartGrayIcon} alt="" />
+                <span>{popup.likes}</span>
+              </Likes>
+            )}
+          </BadgeRow>
           <Title>{popup.title}</Title>
         </TitleArea>
 
@@ -158,6 +170,28 @@ const TitleArea = styled.div`
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
+`;
+
+// 교환글 상세와 같게: 왼쪽 상태 뱃지, 오른쪽 찜 수
+const BadgeRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+`;
+
+// 교환글 상세 찜 수와 같은 스타일 (회색 하트 16px + 12px 숫자)
+const Likes = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  color: #a1a1a1;
+  font-size: 12px;
+
+  img {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const Title = styled.h1`
