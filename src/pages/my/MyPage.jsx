@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useAuth } from "../../context/useAuth";
 
 import Header from "../../components/header/Header";
 import defaultProfile from "../../assets/images/profile/default-profile.jpg";
@@ -14,10 +15,19 @@ const menus = [
   { label: "알림 설정" },
   { label: "공지 사항" },
   { label: "고객 센터" },
+  { label: "로그아웃", action: "logout" },
 ];
 
 export default function MyPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    if (!window.confirm("로그아웃하시겠습니까?")) return;
+
+    await logout();
+    navigate("/", { replace: true });
+  };
 
   return (
     <>
@@ -52,7 +62,11 @@ export default function MyPage() {
             <MenuButton
               type="button"
               onClick={() => {
-                if (menu.path) navigate(menu.path);
+                if (menu.action === "logout") {
+                  handleLogout();
+                } else if (menu.path) {
+                  navigate(menu.path);
+                }
               }}
             >
               {menu.label}
