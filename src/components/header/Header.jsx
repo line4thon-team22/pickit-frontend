@@ -29,12 +29,12 @@ export default function Header({
   showLocationButton = false,
   // TODO: 위치 인증 상태를 전역 상태로 관리
   // (홈/교환/찜이 같은 상태를 쓰므로, 옮기면 prop 대신 헤더 안에서 바로 읽기)
-  isLocationVerified = false,
+  // isLocationVerified = false,
   user,
   onBack,
-  onLocationClick,
+  // onLocationClick,
   // TODO: 현재 인증한 팝업 상세로 이동
-  onPopupCheckClick,
+  // onPopupCheckClick,
   // TODO: 알림·MY 동작이 정해지면 prop 대신 헤더 안에서 바로 이동하도록 변경
   // (어느 페이지에서 눌러도 같은 곳으로 가므로 페이지마다 넘길 필요 없음)
   onNotificationClick,
