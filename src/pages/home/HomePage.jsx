@@ -52,13 +52,6 @@ export default function HomePage() {
     const loadPopups = async () => {
       try {
         const data = await getPopups();
-
-        console.log("팝업 목록:", data);
-        console.log(
-          "팝업 ID:",
-          data.map((popup) => popup.id),
-        );
-
         if (active) {
           setPopups(data.slice(0, 4));
         }
@@ -88,9 +81,6 @@ export default function HomePage() {
           page: 0,
           size: 1,
         });
-
-        console.log("📅 나의 약속 API 응답:", data);
-        console.log("📅 약속 목록:", data.content);
 
         const latest = data.content?.[0];
 
@@ -124,8 +114,6 @@ export default function HomePage() {
       try {
         const data = await getRecommendedPosts(5);
 
-        console.log("💗 추천 게시글 API 응답:", data);
-
         if (active) {
           setProducts(
             (Array.isArray(data) ? data : []).map((post) => ({
@@ -157,9 +145,15 @@ export default function HomePage() {
       <Wrapper>
         <Section>
           <SectionTitle>
-            {isLoggedIn && user?.username
-              ? `${user.username} 님이 관심 가질 아이템`
-              : "피킷 님이 관심 가질 아이템"}
+            {isLoggedIn && user?.username ? (
+              <>
+                <Highlight>{user.username}</Highlight> 님이 관심 가질 아이템
+              </>
+            ) : (
+              <>
+                <Highlight>피킷</Highlight> 님이 관심 가질 아이템
+              </>
+            )}
           </SectionTitle>
 
           <RecommendArea>
@@ -235,6 +229,10 @@ const SectionTitle = styled.h2`
   font-weight: 600;
   color: #000;
   padding: 0 12px;
+`;
+
+const Highlight = styled.span`
+  color: #ff006a;
 `;
 
 const RecommendArea = styled.div`

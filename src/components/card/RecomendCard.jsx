@@ -13,7 +13,7 @@ export default function RecommendCard({
     <Card $isActive={isActive} {...props}>
       <BackgroundImage $image={image} />
 
-      <ProductImage src={image} alt={title} />
+      <ProductImage src={image || undefined} alt={title} />
 
       <Info>
         <Title>{title}</Title>
@@ -57,7 +57,7 @@ const BackgroundImage = styled.div`
 
 const ProductImage = styled.img`
   display: block;
-  width: calc(100% - 7px);
+  width: calc(100% - 8px);
   aspect-ratio: 1 / 1;
   margin: 4px;
   border-radius: 10px;
@@ -80,7 +80,7 @@ const Title = styled.div`
 `;
 
 const Wanted = styled.div`
-  margin: 4px 0;
+  margin: 0 0 4px;
   font-size: 10px;
   color: #ff006a;
   font-weight: 400;
