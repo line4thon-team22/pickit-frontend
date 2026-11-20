@@ -11,12 +11,7 @@ import heartFilledIcon from "../../assets/images/icon/heart-pink-large.svg";
 import heartGrayIcon from "../../assets/images/icon/heart-gray.svg";
 
 import useApi from "../../hooks/useApi";
-import {
-  getPopupDetail,
-  getPopupLikeInfo,
-  likePopup,
-  unlikePopup,
-} from "../../api/popupApi";
+import { getPopupDetail, likePopup, unlikePopup } from "../../api/popupApi";
 
 // 팝업 상세 화면 (피그마 팝업 상세 257:3150)
 export default function PopupDetailPage() {
@@ -25,20 +20,13 @@ export default function PopupDetailPage() {
 
   const {
     data: popup,
+    setData: setPopup,
     isLoading,
     error,
     refetch,
   } = useApi(() => getPopupDetail(popupId), [popupId]);
 
-  // ===== 찜 (교환글 상세와 같은 방식) =====
-  // 찜 여부·찜 수: 상세 응답에 없어서 따로 받아옴 (popupApi getPopupLikeInfo 참고)
-  // TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 isLiked·likeCount 추가되면 popup 데이터로 바꾸고 이 요청 삭제 (작업 08)
-  const {
-    data: likeInfo,
-    setData: setLikeInfo,
-    isLoading: isLikeInfoLoading,
-  } = useApi(() => getPopupLikeInfo(popupId), [popupId]);
-
+  // ===== 찜 (교환글 상세와 같은 방식, 찜 여부·찜 수는 상세 응답 그대로) =====
   // 하트는 누르는 즉시 바뀌고(ToggleIconButton), 그 다음 서버에 저장
   // - 성공: 서버가 준 찜 여부·찜 수로 갱신 (찜 수 바로 반영)
   // - 실패: 하트를 원래대로 되돌림 (key를 바꿔 다시 그려서 isLiked로 초기화)
@@ -51,7 +39,7 @@ export default function PopupDetailPage() {
       const result = nextLiked
         ? await likePopup(popupId)
         : await unlikePopup(popupId);
-      setLikeInfo(result);
+      setPopup((prev) => ({ ...prev, ...result }));
     } catch (err) {
       setLikeRevertCount((count) => count + 1);
 
@@ -108,22 +96,19 @@ export default function PopupDetailPage() {
         <img src={popup.image} alt={popup.title} />
 
         {/* 찜 하트 (피그마 없음, 교환글 상세와 같은 위치·크기·아이콘) */}
-        {/* 찜 여부를 받아온 뒤에 그림 (처음 상태가 흰 하트로 잘못 보이지 않게) */}
-        {!isLikeInfoLoading && (
-          <HeartPosition>
-            <ToggleIconButton
-              key={likeRevertCount}
-              defaultActive={likeInfo?.isLiked ?? false}
-              inactiveIcon={heartLineIcon}
-              activeIcon={heartFilledIcon}
-              onChange={handleLikeChange}
-              aria-label="찜하기"
-              $width={48}
-              $height={48}
-              $iconSize={48}
-            />
-          </HeartPosition>
-        )}
+        <HeartPosition>
+          <ToggleIconButton
+            key={likeRevertCount}
+            defaultActive={popup.isLiked}
+            inactiveIcon={heartLineIcon}
+            activeIcon={heartFilledIcon}
+            onChange={handleLikeChange}
+            aria-label="찜하기"
+            $width={48}
+            $height={48}
+            $iconSize={48}
+          />
+        </HeartPosition>
       </Poster>
 
       <InfoSection>
@@ -131,11 +116,11 @@ export default function PopupDetailPage() {
           <BadgeRow>
             <StatusBadge type="popup" status={popup.status} size="large" />
 
-            {/* 찜 수 (교환글 상세와 같은 위치). 받아오기 전·못 받아오면 숨김 */}
-            {likeInfo?.likes != null && (
+            {/* 찜 수 (교환글 상세와 같은 위치) */}
+            {popup.likes != null && (
               <Likes>
                 <img src={heartGrayIcon} alt="" />
-                <span>{likeInfo.likes}</span>
+                <span>{popup.likes}</span>
               </Likes>
             )}
           </BadgeRow>
