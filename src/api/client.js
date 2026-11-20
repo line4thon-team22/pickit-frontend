@@ -26,7 +26,11 @@ export const clearTokens = () => {
 export const toImageUrl = (path) => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
-  return `${API_BASE_URL}${path}`;
+
+  const baseUrl = API_BASE_URL.replace(/\/+$/, "");
+  const imagePath = path.replace(/^\/+/, "");
+
+  return `${baseUrl}/${imagePath}`;
 };
 
 const client = axios.create({
