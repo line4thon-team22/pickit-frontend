@@ -6,6 +6,8 @@ import { getPosts, getRecommendedPosts } from "../../api/postApi";
 import { toImageUrl } from "../../api/client";
 import { getPopups } from "../../api/popupApi";
 import { getMyAppointments } from "../../api/appointmentApi";
+import { toExchangePost } from "../../api/exchangeApi";
+import { toExchangeCardProps } from "../exchange/exchangeUtils";
 
 import Header from "../../components/header/Header";
 import RecommendBanner from "../../components/area/RecommendBanner";
@@ -76,7 +78,9 @@ export default function HomePage() {
 
     const loadAppointment = async () => {
       try {
+        // 완료된 약속은 제외 (status 없이 조회하면 완료 건도 같이 옴)
         const data = await getMyAppointments({
+          status: "CONFIRMED",
           page: 0,
           size: 10,
         });
@@ -179,18 +183,18 @@ export default function HomePage() {
           <SectionTitle>지금 올라온 교환글</SectionTitle>
 
           <ExchangeList>
-            {exchanges.map((exchange) => (
-              <ExchangeCard
-                key={exchange.postId}
-                image={toImageUrl(exchange.images?.[0])}
-                title={exchange.haveItemName}
-                want={exchange.wantItemName}
-                status="new"
-                likes={exchange.likeCount}
-                comments={exchange.chatCount}
-                onClick={() => navigate(`/exchange/post/${exchange.postId}`)}
-              />
-            ))}
+            {/* 교환 탭 목록과 같은 변환 사용 (서버 tag·status로 뱃지, 예약·완료 글은 사진 어둡게) */}
+            {exchanges.map((exchange) => {
+              const post = toExchangePost(exchange);
+
+              return (
+                <ExchangeCard
+                  key={post.id}
+                  {...toExchangeCardProps(post)}
+                  onClick={() => navigate(`/exchange/post/${post.id}`)}
+                />
+              );
+            })}
           </ExchangeList>
         </Section>
 
