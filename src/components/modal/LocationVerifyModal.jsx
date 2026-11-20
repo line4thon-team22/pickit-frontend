@@ -15,11 +15,14 @@ import { previewLocation, verifyLocation } from "../../api/locationApi";
 export default function LocationVerifyModal({ isOpen, onClose, onVerified }) {
   const [step, setStep] = useState("request");
   const [location, setLocation] = useState(null);
+  const [address, setAddress] = useState("");
   const [popups, setPopups] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleVerify = async () => {
     setStep("loading");
+    setAddress("");
+    setPopups([]);
 
     try {
       const currentLocation = await getCurrentLocation();
@@ -110,7 +113,7 @@ export default function LocationVerifyModal({ isOpen, onClose, onVerified }) {
           <LocationHeader>
             <LocationInfo>
               <LocationLabel>현재 내 위치</LocationLabel>
-              <LocationName>{popups[0]?.district ?? "현재 위치"}</LocationName>
+              <LocationName>{address || "현재 위치"}</LocationName>
             </LocationInfo>
 
             <RefreshButton type="button" onClick={handleVerify}>
@@ -119,7 +122,7 @@ export default function LocationVerifyModal({ isOpen, onClose, onVerified }) {
             </RefreshButton>
           </LocationHeader>
 
-          <LocationMap />
+          <LocationMap location={location} onAddressChange={setAddress} />
 
           <PopupList>
             {popups.length > 0 ? (
