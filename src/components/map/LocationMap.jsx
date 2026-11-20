@@ -53,6 +53,8 @@ export default function LocationMap({ location, onAddressChange }) {
     loadKakaoMaps()
       .then(() => {
         if (cancelled || !containerRef.current) return;
+        // 이전 시도에서 실패했어도 이번에 불러오면 오류 문구를 지운다
+        setError("");
         const { kakao } = window;
         const center = new kakao.maps.LatLng(location.lat, location.lng);
         const map = new kakao.maps.Map(containerRef.current, {
