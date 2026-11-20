@@ -12,6 +12,9 @@ import refreshIcon from "../../assets/images/icon/refresh.svg";
 import { getCurrentLocation } from "../../utils/getCurrentLocation";
 import { previewLocation, verifyLocation } from "../../api/locationApi";
 
+// 인증 요청에 그대로 쓸 수 있는 측정값의 최대 나이 (서버 기준 1분보다 여유 있게)
+const MAX_LOCATION_AGE_MS = 50 * 1000;
+
 export default function LocationVerifyModal({ isOpen, onClose, onVerified }) {
   const [step, setStep] = useState("request");
   const [location, setLocation] = useState(null);
@@ -51,7 +54,16 @@ export default function LocationVerifyModal({ isOpen, onClose, onVerified }) {
     try {
       setIsSaving(true);
 
-      const data = await verifyLocation(location);
+      // 서버는 1분 지난 측정값을 거절(400)하므로, 측정 후 50초가 지났으면 다시 측정
+      let verifyTarget = location;
+      const measuredAgo = Date.now() - new Date(location.measuredAt).getTime();
+
+      if (!(measuredAgo < MAX_LOCATION_AGE_MS)) {
+        verifyTarget = await getCurrentLocation();
+        setLocation(verifyTarget);
+      }
+
+      const data = await verifyLocation(verifyTarget);
 
       console.log("✅ 위치 인증 결과:", data);
 
