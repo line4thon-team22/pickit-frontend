@@ -30,8 +30,7 @@ export default function ExchangePage() {
     setSearchParams(tab === "all" ? { tab: "all" } : {}, { replace: true });
 
   // ===== 위치 인증 (위치 인증 도메인은 다른 프론트 팀원 담당) =====
-  // 인증 여부·내 현장 팝업 목록: 헤더 위치 버튼과 내 현장 팝업 탭이 같이 씀
-  // TODO(위치 인증): 담당 팀원의 전역 상태로 교체 (지금은 이 화면에 들어올 때 한 번 조회)
+  // 인증 여부·내 현장 팝업 목록 (이 화면에 들어올 때 한 번 조회)
   const {
     data: verification,
     setData: setVerification,
@@ -55,25 +54,16 @@ export default function ExchangePage() {
     }));
   };
 
-  // 헤더 "위치 인증"·"팝업 확인"(인증 후 이름만 바뀜)·오버레이 버튼 모두 같은 위치 인증 모달(담당 팀원 컴포넌트)
-  // 모달을 닫으면 내 현장 팝업을 다시 불러옴 (인증 결과 반영)
-  // TODO(위치 인증): 모달에 실제 위치 인증 API가 연결되면 그대로 동작 (지금 모달은 UI만, 더미 팝업 표시)
+  // 내 현장 팝업 "위치 인증하러 가기" 버튼 → 위치 인증 모달(담당 팀원 컴포넌트)
+  // 인증에 성공하면 내 현장 팝업을 다시 불러옴
+  // 헤더 위치 버튼은 Header가 인증 상태·모달을 직접 관리함
+  // TODO(위치 인증): 헤더에서 인증해도 이 목록은 새로고침 전까지 그대로 → 위치 인증 상태가 전역으로 공유되면 연결
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const handleVerifyLocation = () => setIsLocationModalOpen(true);
-  const handleLocationModalClose = () => {
-    setIsLocationModalOpen(false);
-    refetchVerification();
-  };
 
   return (
     <>
-      <Header
-        variant="main"
-        showLocationButton
-        isLocationVerified={verification?.isVerified ?? false}
-        onLocationClick={handleVerifyLocation}
-        onPopupCheckClick={handleVerifyLocation}
-      />
+      <Header variant="main" showLocationButton />
 
       <TopBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
 
@@ -98,7 +88,11 @@ export default function ExchangePage() {
 
       {/* 열 때마다 처음 단계부터 시작하도록 열려 있을 때만 그림 (Header와 같은 방식) */}
       {isLocationModalOpen && (
-        <LocationVerifyModal isOpen onClose={handleLocationModalClose} />
+        <LocationVerifyModal
+          isOpen
+          onClose={() => setIsLocationModalOpen(false)}
+          onVerified={refetchVerification}
+        />
       )}
     </>
   );
