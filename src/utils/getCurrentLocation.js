@@ -19,11 +19,14 @@ export const getCurrentLocation = () =>
       }
     };
 
-    const toLocation = ({ coords, timestamp }) => ({
+    // measuredAt: 위치를 받은 시각 (maximumAge: 0으로 새 측정만 받음)
+    // position.timestamp는 브라우저·개발자도구 위치 설정에 따라 옛날 값이 와서
+    // 서버가 "1분 이내 측정값 아님"(400)으로 거절하는 경우가 있음
+    const toLocation = ({ coords }) => ({
       lat: coords.latitude,
       lng: coords.longitude,
       accuracyMeters: coords.accuracy,
-      measuredAt: new Date(timestamp).toISOString(),
+      measuredAt: new Date().toISOString(),
     });
 
     const finish = (position) => {
