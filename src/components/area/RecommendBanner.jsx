@@ -98,6 +98,8 @@ export default function RecommendBanner({
 }
 
 const Container = styled.div`
+  position: relative;
+  isolation: isolate;
   width: 100%;
 `;
 
