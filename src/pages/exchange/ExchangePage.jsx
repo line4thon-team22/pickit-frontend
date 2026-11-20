@@ -54,16 +54,21 @@ export default function ExchangePage() {
     }));
   };
 
-  // 내 현장 팝업 "위치 인증하러 가기" 버튼 → 위치 인증 모달(담당 팀원 컴포넌트)
-  // 인증에 성공하면 내 현장 팝업을 다시 불러옴
-  // 헤더 위치 버튼은 Header가 인증 상태·모달을 직접 관리함
-  // TODO(위치 인증): 헤더에서 인증해도 이 목록은 새로고침 전까지 그대로 → 위치 인증 상태가 전역으로 공유되면 연결
+  // 위치 인증 성공 시 내 현장 팝업을 다시 불러옴
+  // - 헤더 위치 버튼: Header가 인증 상태·모달을 직접 관리하고, 성공하면 onLocationVerified로 알려 줌
+  // - 내 현장 팝업 "위치 인증하러 가기" 버튼: 이 화면에서 위치 인증 모달(담당 팀원 컴포넌트)을 엶
+  // - 다른 탭에서 인증하고 오면 이 화면에 들어올 때 새로 조회하므로 바로 반영됨
+  // TODO(위치 인증): 위치 인증 상태가 전역으로 관리되면 그 상태를 쓰도록 교체
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const handleVerifyLocation = () => setIsLocationModalOpen(true);
 
   return (
     <>
-      <Header variant="main" showLocationButton />
+      <Header
+        variant="main"
+        showLocationButton
+        onLocationVerified={refetchVerification}
+      />
 
       <TopBar tabs={TABS} activeTab={activeTab} onChange={handleTabChange} />
 
