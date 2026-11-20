@@ -35,6 +35,8 @@ export default function Header({
   // onLocationClick,
   // TODO: 현재 인증한 팝업 상세로 이동
   // onPopupCheckClick,
+  // 위치 인증 성공 시 화면에 알림 (예: 교환 탭이 내 현장 팝업 목록 다시 조회), 선택
+  onLocationVerified,
   // TODO: 알림·MY 동작이 정해지면 prop 대신 헤더 안에서 바로 이동하도록 변경
   // (어느 페이지에서 눌러도 같은 곳으로 가므로 페이지마다 넘길 필요 없음)
   onNotificationClick,
@@ -108,8 +110,9 @@ export default function Header({
     }
   };
 
-  const handleLocationVerified = () => {
+  const handleLocationVerified = (data) => {
     setLocationVerified(true);
+    onLocationVerified?.(data);
   };
 
   const handleMyClick = () => {

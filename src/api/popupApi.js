@@ -25,8 +25,8 @@ const toPopupCard = (popup) => ({
   likes: popup.likeCount,
 });
 
-// 상세 화면용 (목록 카드 필드 + 주소·설명·카테고리)
-// 상세 응답에는 isLiked·likeCount가 없음
+// 상세 화면용 (목록 카드 필드 + 주소·설명·카테고리 + 찜 여부·찜 수)
+// 비로그인이면 isLiked는 false
 const toPopupDetail = (popup) => ({
   id: popup.popupId,
   title: popup.name,
@@ -38,6 +38,8 @@ const toPopupDetail = (popup) => ({
   description: popup.description,
   categoryId: popup.categoryId,
   categoryName: popup.categoryName,
+  isLiked: popup.isLiked ?? false,
+  likes: popup.likeCount,
 });
 
 // 필터 바텀시트 선택지 → [{ key, title, options: [{ value, label }] }]
@@ -102,15 +104,6 @@ export const getPopupFilters = async () => {
 export const getPopupDetail = async (popupId) => {
   const data = await client.get(`/api/popups/${popupId}`);
   return toPopupDetail(data);
-};
-
-// 팝업 하나의 찜 여부·찜 수 (팝업 상세 하트·찜 수용)
-// 상세 응답에 없어서 팝업 목록(로그인하면 isLiked 포함)에서 찾음. 목록에 없으면 null
-// TODO(API): 백엔드 수정 후 반영 예정 - 상세 응답에 isLiked·likeCount 추가되면 이 함수 삭제하고 toPopupDetail에서 연결 (작업 08)
-export const getPopupLikeInfo = async (popupId) => {
-  const popups = await getPopups();
-  const popup = popups.find((item) => String(item.id) === String(popupId));
-  return popup ? { isLiked: popup.isLiked, likes: popup.likes } : null;
 };
 
 // 찜한 팝업 목록 (로그인 필요, 페이지 없이 전체)

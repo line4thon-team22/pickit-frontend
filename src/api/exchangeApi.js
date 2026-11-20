@@ -73,6 +73,7 @@ const toVerifiedPopupCard = (popup) => ({
   location: popup.district,
   period: formatPeriod(popup.startDate, popup.endDate),
   likes: popup.likeCount,
+  isLiked: popup.isLiked ?? false,
 });
 
 // 선택 입력값: 비어 있으면 null로 보냄
