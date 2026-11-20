@@ -50,7 +50,14 @@ export default function LocationMap({ location, onAddressChange }) {
         const { kakao } = window;
         const center = new kakao.maps.LatLng(location.lat, location.lng);
         const map = new kakao.maps.Map(containerRef.current, { center, level: 3 });
-        new kakao.maps.Marker({ map, position: center });
+        const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="54" viewBox="0 0 44 54"><path d="M22 2C10.4 2 2 10.4 2 22c0 15 20 30 20 30s20-15 20-30C42 10.4 33.6 2 22 2Z" fill="#FF006A" stroke="white" stroke-width="3"/><circle cx="22" cy="21" r="8" fill="white"/><circle cx="22" cy="21" r="3.5" fill="#FF006A"/></svg>`;
+        const markerUrl = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(markerSvg)}`;
+        const markerImage = new kakao.maps.MarkerImage(
+          markerUrl,
+          new kakao.maps.Size(44, 54),
+          { offset: new kakao.maps.Point(22, 52) },
+        );
+        new kakao.maps.Marker({ map, position: center, image: markerImage });
 
         // 모달이 나타난 직후 지도 크기를 다시 계산한다.
         requestAnimationFrame(() => {

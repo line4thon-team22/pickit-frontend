@@ -196,9 +196,12 @@ const LocationHeader = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
 `;
 
 const LocationInfo = styled.div`
+  min-width: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -215,15 +218,18 @@ const LocationName = styled.span`
   font-size: 24px;
   font-weight: 600;
   color: #ff006a;
+  overflow-wrap: anywhere;
 `;
 
 const RefreshButton = styled.button`
   display: flex;
-  flex-direction: column;
+  flex-shrink: 0;
+  flex-direction: row;
   align-items: center;
-  gap: 2px;
+  gap: 5px;
+  white-space: nowrap;
 
-  padding: 0;
+  padding: 4px 0;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -234,7 +240,8 @@ const RefreshButton = styled.button`
   }
 
   span {
-    font-size: 8px;
+    white-space: nowrap;
+    font-size: 10px;
     color: #727272;
     font-weight: 500;
   }
