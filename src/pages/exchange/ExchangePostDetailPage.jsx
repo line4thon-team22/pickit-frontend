@@ -85,7 +85,6 @@ export default function ExchangePostDetailPage() {
     setIsChatLoading(true);
     try {
       const roomId = await createChatRoom(post.id);
-      // TODO: 채팅 라우트 chatId = roomId로 채팅 담당과 맞추기 (ChatRoomPage가 아직 chatId를 읽지 않음)
       navigate(`/chat/${roomId}`);
     } catch (err) {
       if (err.status === 401) setIsLoginModalOpen(true);
