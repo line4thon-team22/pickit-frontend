@@ -77,21 +77,23 @@ export default function HomePage() {
     const loadAppointment = async () => {
       try {
         const data = await getMyAppointments({
-          status: "CONFIRMED",
           page: 0,
-          size: 1,
+          size: 10,
         });
-
         const latest = data.content?.[0];
 
-        if (active && latest) {
-          setAppointment({
-            image: toImageUrl(latest.post.images?.[0]),
-            title: latest.post.haveItemName,
-            want: latest.post.wantItemName,
-            location: latest.meetingPlace,
-            date: latest.post.preferredTime || "시간 미정",
-          });
+        if (active) {
+          setAppointment(
+            latest
+              ? {
+                  image: toImageUrl(latest.post.images?.[0]),
+                  title: latest.post.haveItemName,
+                  want: latest.post.wantItemName,
+                  location: latest.meetingPlace,
+                  date: latest.post.preferredTime || "시간 미정",
+                }
+              : null,
+          );
         }
       } catch (error) {
         console.error("나의 약속 조회 실패:", error);
@@ -165,7 +167,7 @@ export default function HomePage() {
           </RecommendArea>
         </Section>
 
-        {appointment && (
+        {isLoggedIn && appointment && (
           <Section>
             <SectionTitle>나의 약속</SectionTitle>
 
