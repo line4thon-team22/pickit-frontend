@@ -188,7 +188,7 @@ export default function HomePage() {
                 status="new"
                 likes={exchange.likeCount}
                 comments={exchange.chatCount}
-                onClick={() => navigate(`/posts/${exchange.postId}`)}
+                onClick={() => navigate(`/exchange/post/${exchange.postId}`)}
               />
             ))}
           </ExchangeList>
@@ -202,7 +202,7 @@ export default function HomePage() {
               <PopupCard
                 key={popup.id}
                 {...popup}
-                onClick={() => navigate(`/popups/${popup.id}`)}
+                onClick={() => navigate(`/popup/${popup.id}`)}
               />
             ))}
           </PopupList>
