@@ -52,13 +52,6 @@ export default function HomePage() {
     const loadPopups = async () => {
       try {
         const data = await getPopups();
-
-        console.log("팝업 목록:", data);
-        console.log(
-          "팝업 ID:",
-          data.map((popup) => popup.id),
-        );
-
         if (active) {
           setPopups(data.slice(0, 4));
         }
@@ -84,24 +77,23 @@ export default function HomePage() {
     const loadAppointment = async () => {
       try {
         const data = await getMyAppointments({
-          status: "CONFIRMED",
           page: 0,
-          size: 1,
+          size: 10,
         });
-
-        console.log("📅 나의 약속 API 응답:", data);
-        console.log("📅 약속 목록:", data.content);
-
         const latest = data.content?.[0];
 
-        if (active && latest) {
-          setAppointment({
-            image: toImageUrl(latest.post.images?.[0]),
-            title: latest.post.haveItemName,
-            want: latest.post.wantItemName,
-            location: latest.meetingPlace,
-            date: latest.post.preferredTime || "시간 미정",
-          });
+        if (active) {
+          setAppointment(
+            latest
+              ? {
+                  image: toImageUrl(latest.post.images?.[0]),
+                  title: latest.post.haveItemName,
+                  want: latest.post.wantItemName,
+                  location: latest.meetingPlace,
+                  date: latest.post.preferredTime || "시간 미정",
+                }
+              : null,
+          );
         }
       } catch (error) {
         console.error("나의 약속 조회 실패:", error);
@@ -123,8 +115,6 @@ export default function HomePage() {
     const loadRecommendedPosts = async () => {
       try {
         const data = await getRecommendedPosts(5);
-
-        console.log("💗 추천 게시글 API 응답:", data);
 
         if (active) {
           setProducts(
@@ -157,9 +147,15 @@ export default function HomePage() {
       <Wrapper>
         <Section>
           <SectionTitle>
-            {isLoggedIn && user?.username
-              ? `${user.username} 님이 관심 가질 아이템`
-              : "피킷 님이 관심 가질 아이템"}
+            {isLoggedIn && user?.username ? (
+              <>
+                <Highlight>{user.username}</Highlight> 님이 관심 가질 아이템
+              </>
+            ) : (
+              <>
+                <Highlight>피킷</Highlight> 님이 관심 가질 아이템
+              </>
+            )}
           </SectionTitle>
 
           <RecommendArea>
@@ -171,7 +167,7 @@ export default function HomePage() {
           </RecommendArea>
         </Section>
 
-        {appointment && (
+        {isLoggedIn && appointment && (
           <Section>
             <SectionTitle>나의 약속</SectionTitle>
 
@@ -192,7 +188,7 @@ export default function HomePage() {
                 status="new"
                 likes={exchange.likeCount}
                 comments={exchange.chatCount}
-                onClick={() => navigate(`/posts/${exchange.postId}`)}
+                onClick={() => navigate(`/exchange/post/${exchange.postId}`)}
               />
             ))}
           </ExchangeList>
@@ -206,7 +202,7 @@ export default function HomePage() {
               <PopupCard
                 key={popup.id}
                 {...popup}
-                onClick={() => navigate(`/popups/${popup.id}`)}
+                onClick={() => navigate(`/popup/${popup.id}`)}
               />
             ))}
           </PopupList>
@@ -235,6 +231,10 @@ const SectionTitle = styled.h2`
   font-weight: 600;
   color: #000;
   padding: 0 12px;
+`;
+
+const Highlight = styled.span`
+  color: #ff006a;
 `;
 
 const RecommendArea = styled.div`

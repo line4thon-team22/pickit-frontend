@@ -4,7 +4,7 @@ import product3 from "../assets/images/product/recommend3.png";
 import product4 from "../assets/images/product/recommend4.png";
 import product5 from "../assets/images/product/recommend5.png";
 
-export const products = [
+export const Recproducts = [
   {
     image: product1,
     title: "베이비 쿠로미 인형",

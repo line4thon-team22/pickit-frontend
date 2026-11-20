@@ -5,6 +5,8 @@ import RecommendCard from "../card/RecomendCard";
 import CommonButton from "../button/CommonButton";
 import alertIcon from "../../assets/images/icon/alert.svg";
 
+import { Recproducts } from "../../data/homeDummyData";
+
 export default function RecommendBanner({
   products = [],
   isLoggedIn = false,
@@ -12,10 +14,13 @@ export default function RecommendBanner({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const handleMove = (index) => {
-    if (products.length === 0) return;
+  // 로그인: 실제 추천 데이터 / 로그아웃: 기존 더미 데이터
+  const displayProducts = isLoggedIn ? products : Recproducts.slice(0, 5);
 
-    setActiveIndex((index + products.length) % products.length);
+  const handleMove = (index) => {
+    if (displayProducts.length === 0) return;
+
+    setActiveIndex((index + displayProducts.length) % displayProducts.length);
   };
 
   const handleTouchStart = (e) => {
@@ -38,9 +43,11 @@ export default function RecommendBanner({
         onTouchStart={isLoggedIn ? handleTouchStart : undefined}
         onTouchEnd={isLoggedIn ? handleTouchEnd : undefined}
       >
-        {products.map((product, index) => {
+        {displayProducts.map((product, index) => {
           const offset =
-            ((index - activeIndex + products.length + 2) % products.length) - 2;
+            ((index - activeIndex + displayProducts.length + 2) %
+              displayProducts.length) -
+            2;
 
           const distance = Math.abs(offset);
 
@@ -85,7 +92,7 @@ export default function RecommendBanner({
       </BannerArea>
 
       <Indicator>
-        {products.map((_, index) => (
+        {displayProducts.map((_, index) => (
           <Line
             key={index}
             $active={index === activeIndex}
