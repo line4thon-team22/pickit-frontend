@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 
@@ -104,17 +104,34 @@ export default function ChatRoomPage() {
     };
   }, [chatId]);
 
+  // 상대가 교환을 확정·완료했을 때 버튼 상태를 맞추기 위해 상세만 다시 조회
+  const refreshRoom = useCallback(async () => {
+    try {
+      const data = await getChatRoomDetail(chatId);
+      setRoom(data);
+    } catch (err) {
+      console.error("채팅방 다시 조회 실패:", err);
+    }
+  }, [chatId]);
+
   // 2. 이전 메시지 조회 + WebSocket 연결
+  // room 전체가 아니라 roomId·상대 id에만 의존 (상세를 다시 조회해도 소켓은 유지)
+  const roomId = room?.roomId;
+  const opponentId = room?.opponent?.userId;
+
   useEffect(() => {
-    if (!room?.roomId) return;
+    if (!roomId) return;
 
     let active = true;
     let socket = null;
 
-    const opponentId = room.opponent?.userId;
-
     const addMessage = (data) => {
       if (!active) return;
+
+      // 교환 확정 메시지(서버 생성)가 오면 상대 화면도 버튼 상태 갱신
+      if (data.messageType === "APPOINTMENT") {
+        refreshRoom();
+      }
 
       const formatted = formatChatMessage(data, opponentId);
 
@@ -131,7 +148,7 @@ export default function ChatRoomPage() {
     // 소켓을 먼저 연결하고 메시지 조회
     // 조회 중 도착한 새 메시지도 ID로 중복 제거
     socket = connectChatSocket({
-      roomId: room.roomId,
+      roomId,
 
       onMessage: addMessage,
 
@@ -154,7 +171,7 @@ export default function ChatRoomPage() {
 
     const loadMessages = async () => {
       try {
-        const data = await getChatMessages(room.roomId, {
+        const data = await getChatMessages(roomId, {
           size: 30,
         });
 
@@ -195,7 +212,28 @@ export default function ChatRoomPage() {
 
       disconnectChatSocket(socket);
     };
-  }, [room]);
+  }, [roomId, opponentId, refreshRoom]);
+
+  // 교환 완료는 서버 메시지가 없어서, 확정 후 완료 전까지만 주기적으로 상세 재조회
+  // 앱으로 돌아왔을 때도 한 번 재조회
+  // TODO(API): 교환 완료 알림(소켓 메시지)이 생기면 주기 조회 제거
+  const isWaitingComplete = isConfirmed && !isCompleted;
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") refreshRoom();
+    };
+    document.addEventListener("visibilitychange", handleVisible);
+
+    const timerId = isWaitingComplete ? setInterval(refreshRoom, 5000) : null;
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisible);
+      if (timerId) clearInterval(timerId);
+    };
+  }, [roomId, isWaitingComplete, refreshRoom]);
 
   // 3. 새 메시지가 추가되면 아래로 스크롤
   useEffect(() => {
