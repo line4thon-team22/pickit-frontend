@@ -9,6 +9,11 @@ import {
   sendChatMessage,
   disconnectChatSocket,
 } from "../../api/chatSocket";
+import {
+  confirmAppointment,
+  completeAppointment,
+  createAppointmentReview,
+} from "../../api/appointmentApi";
 
 import Header from "../../components/header/Header";
 import ModalBase from "../../components/modal/ModalBase";
@@ -52,14 +57,14 @@ export default function ChatRoomPage() {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const isConfirmed = Boolean(room?.appointment?.appointmentId);
+  const isCompleted = Boolean(room?.appointment?.completedAt);
+  const isReviewed = Boolean(room?.appointment?.reviewed);
 
   // 교환 진행 (추후 API 연동)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isConfirmed, setIsConfirmed] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [rating, setRating] = useState(0);
-  const [isReviewed, setIsReviewed] = useState(false);
 
   // 1. 채팅방 상세 조회
   useEffect(() => {
@@ -237,22 +242,58 @@ export default function ChatRoomPage() {
     setMessage("");
   };
 
-  // 아래 교환 기능은 추후 REST API 연동 예정
-  const handleConfirm = () => {
-    setIsConfirmed(true);
-    setIsConfirmOpen(false);
+  const handleConfirm = async () => {
+    if (!room?.roomId) return;
+
+    try {
+      await confirmAppointment(room.roomId, post.place);
+
+      const updatedRoom = await getChatRoomDetail(room.roomId);
+      setRoom(updatedRoom);
+
+      setIsConfirmOpen(false);
+    } catch (err) {
+      console.error("교환 확정 실패:", err);
+      alert(err.message || "교환 확정에 실패했습니다.");
+    }
   };
 
-  const handleComplete = () => {
-    setIsCompleted(true);
-    setIsReviewOpen(true);
+  const handleComplete = async () => {
+    const appointmentId = room?.appointment?.appointmentId;
+
+    if (!appointmentId) {
+      alert("확정된 교환 약속을 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      await completeAppointment(appointmentId);
+
+      const updatedRoom = await getChatRoomDetail(room.roomId);
+      setRoom(updatedRoom);
+
+      setIsReviewOpen(true);
+    } catch (err) {
+      alert(err.message || "교환 완료 처리에 실패했습니다.");
+    }
   };
 
-  const handleReview = () => {
+  const handleReview = async () => {
     if (rating === 0) return;
 
-    setIsReviewed(true);
-    setIsReviewOpen(false);
+    const appointmentId = room?.appointment?.appointmentId;
+    if (!appointmentId) return;
+
+    try {
+      await createAppointmentReview(appointmentId, rating);
+
+      const updatedRoom = await getChatRoomDetail(room.roomId);
+      setRoom(updatedRoom);
+
+      setIsReviewOpen(false);
+    } catch (err) {
+      alert(err.message || "후기 작성에 실패했습니다.");
+    }
   };
 
   if (isLoading || error || !post || !user) {

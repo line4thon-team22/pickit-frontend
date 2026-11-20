@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { getChatRooms } from "../../api/chatApi";
+import { getChatRooms, getChatRoomDetail } from "../../api/chatApi";
 import { toImageUrl } from "../../api/client";
 
 import Header from "../../components/header/Header";
@@ -19,6 +19,9 @@ export default function ChatPage() {
   const [chats, setChats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [appointmentChats, setAppointmentChats] = useState([]);
+  const [isAppointmentLoading, setIsAppointmentLoading] = useState(false);
+  const [appointmentError, setAppointmentError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -56,8 +59,81 @@ export default function ChatPage() {
     };
   }, []);
 
-  // 내 약속 탭은 약속 API 연결 시 필터링
-  const filteredChats = activeTab === "all" ? chats : [];
+  useEffect(() => {
+    if (activeTab !== "appointment") return;
+
+    let active = true;
+
+    const loadAppointmentChats = async () => {
+      setIsAppointmentLoading(true);
+      setAppointmentError("");
+
+      try {
+        const results = await Promise.allSettled(
+          chats.map((chat) => getChatRoomDetail(chat.roomId)),
+        );
+        console.log(
+          "📅 약속 상태 확인:",
+          results.map((result) => ({
+            roomId: result.value?.roomId,
+            appointmentId: result.value?.appointment?.appointmentId,
+            completedAt: result.value?.appointment?.completedAt,
+            status: result.status,
+          })),
+        );
+        console.log("📅 약속 채팅방 상세 응답:", results);
+
+        const hasFailure = results.some(
+          (result) => result.status === "rejected",
+        );
+
+        const appointmentRoomIds = new Set(
+          results
+            .filter(
+              (result) =>
+                result.status === "fulfilled" &&
+                result.value?.appointment?.appointmentId &&
+                result.value?.appointment?.reviewed !== true,
+            )
+            .map((result) => result.value.roomId),
+        );
+
+        if (!active) return;
+
+        setAppointmentChats(
+          chats.filter((chat) => appointmentRoomIds.has(chat.roomId)),
+        );
+
+        if (hasFailure) {
+          setAppointmentError("일부 채팅방의 약속 정보를 불러오지 못했습니다.");
+        }
+      } catch (err) {
+        if (active) {
+          setAppointmentError(
+            err.message || "약속 채팅방을 불러오지 못했습니다.",
+          );
+        }
+      } finally {
+        if (active) {
+          setIsAppointmentLoading(false);
+        }
+      }
+    };
+
+    loadAppointmentChats();
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, chats]);
+
+  const filteredChats = activeTab === "all" ? chats : appointmentChats;
+
+  const currentLoading =
+    isLoading || (activeTab === "appointment" && isAppointmentLoading);
+
+  const currentError =
+    error || (activeTab === "appointment" ? appointmentError : "");
 
   return (
     <>
@@ -73,10 +149,10 @@ export default function ChatPage() {
 
       <Container>
         <ChatList>
-          {isLoading ? (
+          {currentLoading ? (
             <ListMessage>채팅방을 불러오는 중입니다.</ListMessage>
-          ) : error ? (
-            <ListMessage>{error}</ListMessage>
+          ) : currentError ? (
+            <ListMessage>{currentError}</ListMessage>
           ) : filteredChats.length === 0 ? (
             <ListMessage>
               {activeTab === "appointment"
