@@ -60,6 +60,10 @@ export default function ChatRoomPage() {
   const isConfirmed = Boolean(room?.appointment?.appointmentId);
   const isCompleted = Boolean(room?.appointment?.completedAt);
   const isReviewed = Boolean(room?.appointment?.reviewed);
+  // 상대가 글쓴이가 아니면 내가 글쓴이 (교환 확정은 글쓴이만, 서버는 막지 않음)
+  const isWriter =
+    room?.post?.userId != null &&
+    Number(room.post.userId) !== Number(room.opponent?.userId);
 
   // 교환 진행 (추후 API 연동)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -268,14 +272,22 @@ export default function ChatRoomPage() {
 
     try {
       await completeAppointment(appointmentId);
+    } catch (err) {
+      // 409: 상대가 먼저 완료함 → 그대로 후기 작성으로 진행
+      if (err.status !== 409) {
+        alert(err.message || "교환 완료 처리에 실패했습니다.");
+        return;
+      }
+    }
 
+    try {
       const updatedRoom = await getChatRoomDetail(room.roomId);
       setRoom(updatedRoom);
-
-      setIsReviewOpen(true);
     } catch (err) {
-      alert(err.message || "교환 완료 처리에 실패했습니다.");
+      console.error("채팅방 다시 조회 실패:", err);
     }
+
+    setIsReviewOpen(true);
   };
 
   const handleReview = async () => {
@@ -323,9 +335,10 @@ export default function ChatRoomPage() {
             <MetaText>교환 장소 : {post.place}</MetaText>
             <MetaText>교환 시간 : {post.time}</MetaText>
 
+            {/* 교환 확정: 글쓴이만 / 교환 완료·후기 작성: 둘 다 */}
             <StatusButton
               type="button"
-              disabled={isReviewed}
+              disabled={isReviewed || (!isConfirmed && !isWriter)}
               onClick={() => {
                 if (!isConfirmed) {
                   setIsConfirmOpen(true);
@@ -337,7 +350,9 @@ export default function ChatRoomPage() {
               }}
             >
               {!isConfirmed
-                ? "교환 확정하기"
+                ? isWriter
+                  ? "교환 확정하기"
+                  : "상대방의 교환 확정을 기다리고 있어요"
                 : !isCompleted
                   ? "교환 완료"
                   : isReviewed
